@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B766E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>আমার দিনলিপি</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+/* Layout: one phone-width column, five-tab bar at the bottom, a "More" tab that opens the smaller tools. */
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --surface2:#E4E9F0; --ink:#17202E; --muted:#59657A; --line:#D5DCE6;
+  --accent:#0B766E; --accent-ink:#FFFFFF; --accent-soft:#D3EDE9;
+  --good:#1B7F4B; --good-soft:#D8F0E1; --warn:#9A4A06; --warn-soft:#FBEBD0; --bad:#B42318; --bad-soft:#FAD9D5;
+  --shadow:0 1px 2px rgba(23,32,46,.08),0 8px 20px rgba(23,32,46,.06);
+  --f-display:'Noto Sans Bengali','Hind Siliguri',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-body:'Noto Sans Bengali','Hind Siliguri',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1419; --surface:#161F27; --surface2:#202B35; --ink:#E7ECF2; --muted:#9BA8B9; --line:#2C3945;
+  --accent:#4FD1C0; --accent-ink:#06211E; --accent-soft:#12332F;
+  --good:#5BE08D; --good-soft:#12301F; --warn:#F5B65A; --warn-soft:#38270E; --bad:#FF8E7E; --bad-soft:#3C1A16;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 20px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1419; --surface:#161F27; --surface2:#202B35; --ink:#E7ECF2; --muted:#9BA8B9; --line:#2C3945;
+  --accent:#4FD1C0; --accent-ink:#06211E; --accent-soft:#12332F;
+  --good:#5BE08D; --good-soft:#12301F; --warn:#F5B65A; --warn-soft:#38270E; --bad:#FF8E7E; --bad-soft:#3C1A16;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 20px rgba(0,0,0,.25); color-scheme:dark}
+
+*{box-sizing:border-box}
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0}
+body{font-size:16px}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-block:16px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent}
+body.lock{overflow:hidden}
+#app{max-width:560px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.25;text-wrap:balance}
+h1{font-size:1.65rem;font-weight:700}
+h2{font-size:1.15rem;font-weight:600}
+h3{font-size:1rem;font-weight:600}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.ic{flex:none;display:block}
+
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.top .sub{color:var(--muted);font-size:.9rem}
+.back{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:var(--accent);padding:4px 0;margin-bottom:6px;font-weight:600}
+.langbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 12px;font-weight:600;font-size:.85rem;min-height:36px;white-space:nowrap}
+.sync{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap;padding-top:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync.ok i{background:var(--good)} .sync.busy i{background:var(--warn)} .sync.err i{background:var(--bad)}
+
+.card{background:var(--surface);border-radius:16px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;align-items:center;gap:12px;min-width:0}
+.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:8px 2px 0}
+.sec h2{font-size:1rem}
+.link{border:0;background:none;color:var(--accent);font-weight:600;padding:4px 0}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:600;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.block{width:100%}
+.btn.sm{min-height:36px;padding:6px 12px;font-size:.9rem}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:5;width:56px;height:56px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-ink);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center}
+
+.big{font-family:var(--f-display);font-weight:700;font-size:1.9rem;line-height:1.1}
+.label{font-size:.78rem;letter-spacing:.04em;color:var(--muted);font-weight:500}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;font-weight:600;border-radius:999px;padding:2px 10px;background:var(--surface2);color:var(--muted);white-space:nowrap}
+.chip.good{background:var(--good-soft);color:var(--good)} .chip.warn{background:var(--warn-soft);color:var(--warn)} .chip.bad{background:var(--bad-soft);color:var(--bad)} .chip.acc{background:var(--accent-soft);color:var(--accent)}
+
+.hero{background:var(--accent);color:var(--accent-ink);border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+.hero .label{color:inherit;opacity:.8}
+.hero .big{font-size:2.3rem}
+.pr-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:14px}
+.pr{border:1px solid rgba(255,255,255,.35);background:transparent;color:inherit;border-radius:12px;padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.78rem;min-height:56px}
+.pr b{font-weight:600}
+.pr.done{background:var(--accent-ink);color:var(--accent);border-color:var(--accent-ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pr{border-color:rgba(6,33,30,.35)}}
+
+.list{display:flex;flex-direction:column}
+.item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);min-width:0;background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left}
+.item:last-child{border-bottom:0}
+.item .t{font-weight:500;overflow-wrap:anywhere}
+.amt{font-weight:600;white-space:nowrap}
+.amt.out{color:var(--bad)} .amt.in{color:var(--good)}
+.check{width:28px;height:28px;border-radius:9px;border:2px solid var(--line);background:var(--surface);flex:none;display:flex;align-items:center;justify-content:center;color:transparent;padding:0}
+.check.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.empty{text-align:center;color:var(--muted);padding:20px 8px}
+.empty b{display:block;color:var(--ink);font-family:var(--f-display);margin-bottom:4px}
+
+.bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar.over>i{background:var(--bad)}
+.cat{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center}
+.cat .bar{grid-column:1/-1}
+.dots{display:flex;gap:6px}
+.dot{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);padding:0;font-size:.62rem;color:var(--muted)}
+.dot.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.dot.today{outline:2px solid var(--accent-soft)}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);
+  padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));display:flex;justify-content:center}
+.tabs nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;width:100%;max-width:560px}
+.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.74rem;color:var(--muted);padding:6px 0;border-radius:12px;font-weight:500}
+.tabs button.on{color:var(--accent);background:var(--accent-soft);font-weight:600}
+
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tile{background:var(--surface);border:0;border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;align-items:flex-start;text-align:left;min-width:0}
+.tile .ib{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center}
+.tile b{font-family:var(--f-display);font-weight:600}
+.tile span{font-size:.82rem;color:var(--muted)}
+
+#sheet[hidden]{display:none}
+#sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.scrim{position:absolute;inset:0;background:rgba(8,12,18,.55)}
+.panel{position:relative;background:var(--surface);width:100%;max-width:560px;max-height:88%;overflow:auto;border-radius:22px 22px 0 0;
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto 4px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld>span{font-size:.82rem;color:var(--muted);font-weight:500}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;font-size:16px;min-height:46px}
+.fld textarea{resize:vertical;line-height:1.5}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.row-btns{display:flex;gap:12px}
+.row-btns .btn{flex:1}
+.err{color:var(--bad);font-size:.88rem}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--surface2);padding:4px;border-radius:12px}
+.seg button{border:0;background:none;border-radius:9px;padding:8px 4px;font-weight:600;color:var(--muted);min-height:40px}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.search{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;font-size:16px;min-height:46px}
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.9rem;z-index:30;max-width:90%;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.08em}
+svg text{fill:var(--muted);font-size:10px;font-family:var(--f-body)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div id="app"><div id="main"></div></div>
+<button class="fab" id="fab" data-act="fab" aria-label="নতুন যোগ করুন" hidden></button>
+<div class="tabs"><nav id="tabs"></nav></div>
+<div id="sheet" hidden></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- helpers ---------- */
+let LANG='bn';
+try{const l=localStorage.getItem('dinlipi_lang');if(l==='en'||l==='bn')LANG=l;else if(/^en/i.test(navigator.language||'')&&!/bn/i.test(navigator.language))LANG='en'}catch(e){}
+document.documentElement.lang=LANG;
+const EN={"রবিবার": "Sunday", "সোমবার": "Monday", "মঙ্গলবার": "Tuesday", "বুধবার": "Wednesday", "বৃহস্পতিবার": "Thursday", "শুক্রবার": "Friday", "শনিবার": "Saturday", "জানুয়ারি": "January", "ফেব্রুয়ারি": "February", "মার্চ": "March", "এপ্রিল": "April", "মে": "May", "জুন": "June", "জুলাই": "July", "আগস্ট": "August", "সেপ্টেম্বর": "September", "অক্টোবর": "October", "নভেম্বর": "November", "ডিসেম্বর": "December", "খাবার": "Food", "বাজার": "Groceries", "যাতায়াত": "Transport", "মোবাইল ও ইন্টারনেট": "Mobile & internet", "বাসা ভাড়া": "Rent", "দেশে পাঠানো": "Sent home", "চিকিৎসা": "Medical", "কেনাকাটা": "Shopping", "অন্যান্য": "Other", "কুরআন তিলাওয়াত": "Quran recitation", "ব্যায়াম বা হাঁটা": "Exercise or walk", "সকালের জিকির": "Morning dhikr", "ফজর": "Fajr", "যোহর": "Dhuhr", "আসর": "Asr", "মাগরিব": "Maghrib", "এশা": "Isha", " ঘণ্টা ": " h ", " মিনিট বাকি": " min left", "আরও</button>": "More</button>", "<button type=\"button\" class=\"btn danger\" data-act=\"sheet-del\" id=\"sheetDel\">মুছুন</button>": "<button type=\"button\" class=\"btn danger\" data-act=\"sheet-del\" id=\"sheetDel\">Delete</button>", "<button type=\"submit\" class=\"btn primary\">সংরক্ষণ</button></div></form>": "<button type=\"submit\" class=\"btn primary\">Save</button></div></form>", "আসসালামু আলাইকুম, ": "Assalamu alaikum, ", "আজকের দিন": "Today", "<div class=\"hero\"><p class=\"label\">পরবর্তী নামাজ</p>": "<div class=\"hero\"><p class=\"label\">Next prayer</p>", "<div class=\"card\"><p class=\"label\">আজকের খরচ</p><div class=\"big num\">": "<div class=\"card\"><p class=\"label\">Spent today</p><div class=\"big num\">", "</div><p class=\"small muted\">এই মাসে ": "</div><p class=\"small muted\">This month ", "<div class=\"card\"><p class=\"label\">পানি</p><div class=\"big num\">": "<div class=\"card\"><p class=\"label\">Water</p><div class=\"big num\">", "এক গ্লাস</button></div>": "One glass</button></div>", "<div class=\"card\"><p class=\"label\">আমি পাব</p><div class=\"big num\" style=\"color:var(--good)\">": "<div class=\"card\"><p class=\"label\">I'm owed</p><div class=\"big num\" style=\"color:var(--good)\">", "<div class=\"card\"><p class=\"label\">আমি দেব</p><div class=\"big num\" style=\"color:var(--bad)\">": "<div class=\"card\"><p class=\"label\">I owe</p><div class=\"big num\" style=\"color:var(--bad)\">", "<div class=\"sec\"><h2>করণীয়</h2><button class=\"link\" data-act=\"tab\" data-tab=\"task\">সব দেখুন</button></div><div class=\"card\">": "<div class=\"sec\"><h2>To do</h2><button class=\"link\" data-act=\"tab\" data-tab=\"task\">See all</button></div><div class=\"card\">", "আজ কোনো জরুরি কাজ নেই": "Nothing urgent today", "নতুন কাজ যোগ করতে নিচের + চাপুন।": "Tap + below to add a task.", "<div class=\"sec\"><h2>মনে করিয়ে দিচ্ছি</h2></div><div class=\"card\"><div class=\"list\">": "<div class=\"sec\"><h2>Reminders</h2></div><div class=\"card\"><div class=\"list\">", "</div><div class=\"small muted\">মেয়াদ ": "</div><div class=\"small muted\">Expires ", " দিন আগে শেষ": " days overdue", " দিন বাকি": " days left", "</div><div class=\"small muted\">ওষুধ": "</div><div class=\"small muted\">Medicine", "</div></div><span class=\"chip acc\">খেয়েছি</span></button>": "</div></div><span class=\"chip acc\">Taken</span></button>", "\" aria-label=\"সম্পন্ন\">": "\" aria-label=\"Done\">", "মেয়াদ পার": "Overdue", "আজ": "Today", "খরচ": "Expenses", "মাসের হিসাব": "Monthly summary", "<div class=\"stack\"><div class=\"card\"><div class=\"row between\"><button class=\"icon-btn\" data-act=\"month\" data-n=\"-1\" aria-label=\"আগের মাস\">": "<div class=\"stack\"><div class=\"card\"><div class=\"row between\"><button class=\"icon-btn\" data-act=\"month\" data-n=\"-1\" aria-label=\"Previous month\">", "</h2><button class=\"icon-btn\" data-act=\"month\" data-n=\"1\" aria-label=\"পরের মাস\" style=\"transform:scaleX(-1)\">": "</h2><button class=\"icon-btn\" data-act=\"month\" data-n=\"1\" aria-label=\"Next month\" style=\"transform:scaleX(-1)\">", "<div style=\"margin-top:14px\"><p class=\"label\">মোট খরচ</p><div class=\"big num\">": "<div style=\"margin-top:14px\"><p class=\"label\">Total spent</p><div class=\"big num\">", "%\"></i></div><p class=\"small muted\" style=\"margin-top:6px\">বাজেট ": "%\"></i></div><p class=\"small muted\" style=\"margin-top:6px\">Budget ", " বেশি খরচ হয়েছে": " over budget", " বাকি": " left", "<div class=\"card stack\"><h2>কোন খাতে কত</h2>": "<div class=\"card stack\"><h2>Spending by category</h2>", "এই মাসে কোনো খরচ নেই": "No expenses this month", "+ বোতাম চেপে প্রথম খরচ লিখুন।": "Tap the + button to add your first expense.", "অভ্যাস": "Habits", "প্রতিদিনের নিয়মিত কাজ": "Daily routines", "<div class=\"stack\"><div class=\"card\"><div class=\"row between\"><h2>নামাজ</h2><span class=\"chip acc\">": "<div class=\"stack\"><div class=\"card\"><div class=\"row between\"><h2>Prayer</h2><span class=\"chip acc\">", "<div class=\"item\"><div class=\"grow muted small\">সূর্যোদয়</div><span class=\"num muted\">": "<div class=\"item\"><div class=\"grow muted small\">Sunrise</div><span class=\"num muted\">", "</div><p class=\"small muted\" style=\"margin-top:8px\">সময় হিসাব করা, অ্যাপ বন্ধ থাকলে অ্যালার্ম বাজবে না। সেটিংসে শহর ও হিসাবের পদ্ধতি বদলানো যায়।</p></div>": "</div><p class=\"small muted\" style=\"margin-top:8px\">Times are calculated. The app cannot ring an alarm while it is closed. You can change the city and method in Settings.</p></div>", "<div class=\"sec\"><h2>আমার অভ্যাস</h2><button class=\"link\" data-act=\"habit-add\">+ নতুন</button></div>": "<div class=\"sec\"><h2>My habits</h2><button class=\"link\" data-act=\"habit-add\">+ New</button></div>", "কোনো অভ্যাস নেই": "No habits yet", "\"নতুন\" চেপে একটি অভ্যাস যোগ করুন।": "Tap \"New\" to add a habit.", " দিন টানা</span></div><div class=\"dots\">": " day streak</span></div><div class=\"dots\">", "নিজের অবস্থান": "Custom location", "কাজ": "Tasks", "করণীয় তালিকা": "To-do list", "সব কাজ শেষ": "All done", "নতুন কাজ যোগ করতে + চাপুন।": "Tap + to add a task.", "সম্পন্ন কাজ লুকান": "Hide completed tasks", "সম্পন্ন কাজ দেখুন (": "Show completed tasks (", "</div><button class=\"btn sm danger\" style=\"margin-top:8px\" data-act=\"task-clear\">সম্পন্ন কাজ মুছুন</button></div>": "</div><button class=\"btn sm danger\" style=\"margin-top:8px\" data-act=\"task-clear\">Delete completed tasks</button></div>", "<p class=\"small muted\">নির্ধারিত দিনে কাজটি হোম পেজে দেখা যায়। ফোন বাজাতে হলে ফোনের ঘড়ি অ্যাপে অ্যালার্ম দিন।</p></div>": "<p class=\"small muted\">A task shows on the home page on its due day. For a ringing alarm, set one in your phone's clock app.</p></div>", "বাকির খাতা": "Debt ledger", "কে কত পাবে বা দেবে": "Who owes whom", "নোট ও ডায়েরি": "Notes & diary", "লিখে রাখুন": "Write things down", "পাসওয়ার্ড ভল্ট": "Password vault", "পিন দিয়ে সুরক্ষিত": "Protected by a PIN", "ডকুমেন্টের মেয়াদ": "Document expiry", "ইকামা, পাসপোর্ট": "Iqama, passport", "স্বাস্থ্য": "Health", "ওজন, ঘুম, ওষুধ": "Weight, sleep, medicine", "বাজারের তালিকা": "Shopping list", "কী কিনতে হবে": "What to buy", "ওভারটাইম": "Overtime", "বেতনের হিসাব": "Salary calculation", "মুদ্রা কনভার্টার": "Currency converter", "রিয়াল ও টাকা": "Riyal and taka", "সেটিংস": "Settings", "শহর, বাজেট, ব্যাকআপ": "City, budget, backup", "আরও": "More", "সব সরঞ্জাম": "All tools", "\" aria-label=\"মিটেছে\">": "\" aria-label=\"Settled\">", "<div class=\"stack\"><div class=\"grid2\"><div class=\"card\"><p class=\"label\">আমি পাব</p><div class=\"big num\" style=\"color:var(--good)\">": "<div class=\"stack\"><div class=\"grid2\"><div class=\"card\"><p class=\"label\">I'm owed</p><div class=\"big num\" style=\"color:var(--good)\">", "</div></div><div class=\"card\"><p class=\"label\">আমি দেব</p><div class=\"big num\" style=\"color:var(--bad)\">": "</div></div><div class=\"card\"><p class=\"label\">I owe</p><div class=\"big num\" style=\"color:var(--bad)\">", "কোনো বাকি নেই": "Nothing owed", "+ চেপে লেনদেন লিখুন।": "Tap + to add an entry.", "মিটে যাওয়াগুলো লুকান": "Hide settled entries", "মিটে যাওয়া (": "Settled (", "<div class=\"stack\"><input class=\"search\" id=\"noteSearch\" type=\"search\" placeholder=\"নোট খুঁজুন\" aria-label=\"নোট খুঁজুন\">": "<div class=\"stack\"><input class=\"search\" id=\"noteSearch\" type=\"search\" placeholder=\"Search notes\" aria-label=\"Search notes\">", "শিরোনামহীন": "Untitled", "কোনো নোট নেই": "No notes yet", "+ চেপে প্রথম নোট বা আজকের ডায়েরি লিখুন।": "Tap + to write your first note or today's diary.", "এই ব্রাউজারে ভল্ট চলবে না": "The vault does not work here", "এনক্রিপশন সুবিধা পাওয়া যাচ্ছে না।": "Encryption is not available.", "<div class=\"card stack\"><h2>পিন দিয়ে শুরু করুন</h2><p class=\"muted\">আপনার দেওয়া পিন দিয়ে সব তথ্য এনক্রিপ্ট হয়ে সংরক্ষিত হবে। পিন ভুলে গেলে তথ্য ফেরত পাওয়া যাবে না, কেউ উদ্ধার করতে পারবে না।</p><button class=\"btn primary block\" data-act=\"vault-create\">পিন ঠিক করুন</button></div>": "<div class=\"card stack\"><h2>Start with a PIN</h2><p class=\"muted\">Everything is stored encrypted with the PIN you choose. If you forget the PIN, the data cannot be recovered by anyone.</p><button class=\"btn primary block\" data-act=\"vault-create\">Set a PIN</button></div>", "<div class=\"card stack\"><h2>ভল্ট তালাবদ্ধ</h2><p class=\"muted\">পিন দিয়ে খুলুন।</p><button class=\"btn primary block\" data-act=\"vault-unlock\">": "<div class=\"card stack\"><h2>Vault is locked</h2><p class=\"muted\">Unlock it with your PIN.</p><button class=\"btn primary block\" data-act=\"vault-unlock\">", "খুলুন</button><button class=\"link\" data-act=\"vault-reset\" style=\"text-align:left\">পিন ভুলে গেছি, ভল্ট মুছে নতুন করব</button></div>": "Unlock</button><button class=\"link\" data-act=\"vault-reset\" style=\"text-align:left\">I forgot my PIN, erase the vault and start over</button></div>", "তালা দিন</button><button class=\"btn sm primary\" data-act=\"vault-add\">": "Lock</button><button class=\"btn sm primary\" data-act=\"vault-add\">", "নতুন</button></div><div class=\"card\">": "New</button></div><div class=\"card\">", "\" aria-label=\"দেখুন\">": "\" aria-label=\"Show\">", "\" aria-label=\"কপি\">": "\" aria-label=\"Copy\">", "\" aria-label=\"সম্পাদনা\" style=\"font-weight:700\">…</button></div></div>": "\" aria-label=\"Edit\" style=\"font-weight:700\">…</button></div></div>", "ভল্ট খালি": "Vault is empty", "নতুন চেপে প্রথম এন্ট্রি যোগ করুন।": "Tap New to add your first entry.", "ইকামা, পাসপোর্ট, লাইসেন্স": "Iqama, passport, license", "কোনো ডকুমেন্ট নেই": "No documents yet", "+ চেপে ইকামা বা পাসপোর্টের মেয়াদ যোগ করুন। ৬০ দিন আগে হোম পেজে মনে করিয়ে দেওয়া হবে।": "Tap + to add the expiry date of your iqama or passport. A reminder shows on the home page 60 days before.", "\" width=\"100%\" role=\"img\" aria-label=\"ওজনের পরিবর্তন\"><polyline points=\"": "\" width=\"100%\" role=\"img\" aria-label=\"Weight trend\"><polyline points=\"", " কেজি</text><text x=\"": " kg</text><text x=\"", " কেজি</text></svg>": " kg</text></svg>", "<div class=\"card stack\"><div class=\"row between\"><h2>আজ পানি</h2><span class=\"chip acc num\">": "<div class=\"card stack\"><div class=\"row between\"><h2>Water today</h2><span class=\"chip acc num\">", " গ্লাস</span></div><div class=\"bar\"><i style=\"width:": " glasses</span></div><div class=\"bar\"><i style=\"width:", "+ এক গ্লাস</button></div></div>": "+ One glass</button></div></div>", "<div class=\"card stack\"><div class=\"row between\"><h2>ঘুম</h2><button class=\"btn sm\" data-act=\"sleep\">": "<div class=\"card stack\"><div class=\"row between\"><h2>Sleep</h2><button class=\"btn sm\" data-act=\"sleep\">", "বদলান": "Change", "লিখুন": "Log", "</span> ঘণ্টা (গত রাত)": "</span> hours (last night)", "গত রাতে কত ঘণ্টা ঘুমিয়েছেন লিখে রাখুন।": "Log how many hours you slept last night.", "<div class=\"card stack\"><div class=\"row between\"><h2>ওজন</h2><button class=\"btn sm\" data-act=\"weight-add\">+ লিখুন</button></div>": "<div class=\"card stack\"><div class=\"row between\"><h2>Weight</h2><button class=\"btn sm\" data-act=\"weight-add\">+ Add</button></div>", "</span> কেজি <span class=\"small muted\">· ": "</span> kg <span class=\"small muted\">· ", " কেজি</span></button>": " kg</span></button>", "<p class=\"muted\">ওজন লিখলে এখানে ধারা দেখা যাবে।</p>": "<p class=\"muted\">Your weight trend will appear here once you log it.</p>", "<div class=\"card stack\"><div class=\"row between\"><h2>ওষুধ</h2><button class=\"btn sm\" data-act=\"med-add\">+ নতুন</button></div>": "<div class=\"card stack\"><div class=\"row between\"><h2>Medicine</h2><button class=\"btn sm\" data-act=\"med-add\">+ New</button></div>", "\" aria-label=\"খেয়েছি\">": "\" aria-label=\"Taken\">", "<p class=\"muted\">নিয়মিত ওষুধ থাকলে নাম লিখুন, রোজ খাওয়ার টিক দিন।</p>": "<p class=\"muted\">Add your regular medicines and tick them off each day.</p>", "\" aria-label=\"কেনা হয়েছে\">": "\" aria-label=\"Bought\">", "\" aria-label=\"মুছুন\">×</button></div>": "\" aria-label=\"Delete\">×</button></div>", "<div class=\"stack\"><form class=\"row\" id=\"shopForm\" autocomplete=\"off\"><input class=\"search grow\" id=\"shopIn\" placeholder=\"যেমন: চাল ৫ কেজি\" aria-label=\"আইটেম\" enterkeyhint=\"done\"><button class=\"btn primary\" type=\"submit\">যোগ</button></form><div class=\"card\">": "<div class=\"stack\"><form class=\"row\" id=\"shopForm\" autocomplete=\"off\"><input class=\"search grow\" id=\"shopIn\" placeholder=\"e.g. Rice 5 kg\" aria-label=\"Item\" enterkeyhint=\"done\"><button class=\"btn primary\" type=\"submit\">Add</button></form><div class=\"card\">", "তালিকা খালি": "List is empty", "কিনতে হবে এমন জিনিস লিখুন।": "Add things you need to buy.", "<button class=\"btn sm danger\" data-act=\"shop-clear\" style=\"align-self:flex-start\">কেনা জিনিস সরান</button>": "<button class=\"btn sm danger\" data-act=\"shop-clear\" style=\"align-self:flex-start\">Clear bought items</button>", "</h2><button class=\"btn sm\" data-act=\"ot-set\">হিসাবের নিয়ম</button></div>": "</h2><button class=\"btn sm\" data-act=\"ot-set\">Calculation rules</button></div>", "<div class=\"grid2\"><div><p class=\"label\">ওভারটাইম ঘণ্টা</p><div class=\"big num\">": "<div class=\"grid2\"><div><p class=\"label\">Overtime hours</p><div class=\"big num\">", "</div></div><div><p class=\"label\">ওভারটাইমের টাকা</p><div class=\"big num\" style=\"color:var(--good)\">": "</div></div><div><p class=\"label\">Overtime pay</p><div class=\"big num\" style=\"color:var(--good)\">", "</div></div></div><div class=\"list\"><div class=\"item\"><span class=\"grow muted\">ঘণ্টা প্রতি সাধারণ মজুরি</span><span class=\"num\">": "</div></div></div><div class=\"list\"><div class=\"item\"><span class=\"grow muted\">Regular hourly wage</span><span class=\"num\">", "</span></div><div class=\"item\"><span class=\"grow muted\">ওভারটাইম রেট (×": "</span></div><div class=\"item\"><span class=\"grow muted\">Overtime rate (×", "</span></div><div class=\"item\"><span class=\"grow t\">মূল বেতন + ওভারটাইম</span><span class=\"num t\">": "</span></div><div class=\"item\"><span class=\"grow t\">Basic salary + overtime</span><span class=\"num t\">", "<p class=\"muted\">মূল বেতন দিলে ঘণ্টার রেট ও ওভারটাইমের টাকা নিজে হিসাব হবে। \"হিসাবের নিয়ম\" চেপে শুরু করুন।</p>": "<p class=\"muted\">Enter your basic salary and the hourly rate and overtime pay are worked out for you. Tap \"Calculation rules\" to start.</p>", "<div class=\"row between\"><h2 style=\"font-size:1rem\">এই মাসের ওভারটাইম</h2><button class=\"btn sm primary\" data-act=\"ot-add\">": "<div class=\"row between\"><h2 style=\"font-size:1rem\">Overtime this month</h2><button class=\"btn sm primary\" data-act=\"ot-add\">", "যোগ</button></div><div class=\"card\">": "Add</button></div><div class=\"card\">", " ঘণ্টা</span></button>": " hours</span></button>", "এই মাসে কিছু লেখা হয়নি": "Nothing logged this month", "কোন দিন কত ঘণ্টা বাড়তি কাজ করলেন লিখুন।": "Log which day you worked extra hours and how many.", "</div><p class=\"small muted\">সৌদি শ্রম আইনে ওভারটাইমের রেট সাধারণ ঘণ্টার মজুরির ১.৫ গুণ ধরা হয়। আপনার চুক্তি আলাদা হলে নিয়ম বদলে নিন।</p></div>": "</div><p class=\"small muted\">Under Saudi labor law the overtime rate is 1.5 times the regular hourly wage. Change the rules if your contract says otherwise.</p></div>", "</span><input id=\"fxA\" type=\"number\" inputmode=\"decimal\" step=\"any\" value=\"100\"></label><label class=\"fld\"><span>টাকা (BDT)</span><input id=\"fxB\" type=\"number\" inputmode=\"decimal\" step=\"any\" value=\"": "</span><input id=\"fxA\" type=\"number\" inputmode=\"decimal\" step=\"any\" value=\"100\"></label><label class=\"fld\"><span>Taka (BDT)</span><input id=\"fxB\" type=\"number\" inputmode=\"decimal\" step=\"any\" value=\"", "আগে আজকের রেট দিন": "Enter today's rate first", "এখানে লাইভ রেট আসে না। ব্যাংক বা এক্সচেঞ্জ হাউসের আজকের রেট নিজে লিখুন, এরপর যেকোনো অঙ্ক বদলে দেখুন।": "Live rates are not fetched here. Type in today's rate from your bank or exchange house, then change any amount to convert.", "<div class=\"row between\"><div><p class=\"label\">রেট (১ ": "<div class=\"row between\"><div><p class=\"label\">Rate (1 ", " = টাকা)</p><p class=\"num\"><b>": " = taka)</p><p class=\"num\"><b>", "</p></div><button class=\"btn sm\" data-act=\"fx-rate\">রেট বদলান</button></div></div></div>": "</p></div><button class=\"btn sm\" data-act=\"fx-rate\">Change rate</button></div></div></div>", "রিয়াদ": "Riyadh", "জেদ্দা": "Jeddah", "মক্কা": "Makkah", "মদিনা": "Madinah", "দাম্মাম": "Dammam", "ঢাকা": "Dhaka", "অন্য জায়গা": "Other place", "<button class=\"item\" data-act=\"lang\"><div class=\"grow\"><div class=\"t\">ভাষা</div><div class=\"small muted\">": "<button class=\"item\" data-act=\"lang\"><div class=\"grow\"><div class=\"t\">Language</div><div class=\"small muted\">", "<button class=\"item\" data-act=\"set-profile\"><div class=\"grow\"><div class=\"t\">নাম, মুদ্রা, বাজেট</div><div class=\"small muted\">": "<button class=\"item\" data-act=\"set-profile\"><div class=\"grow\"><div class=\"t\">Name, currency, budget</div><div class=\"small muted\">", "নাম দেওয়া নেই": "No name set", " · বাজেট ": " · Budget ", "<button class=\"item\" data-act=\"set-prayer\"><div class=\"grow\"><div class=\"t\">নামাজের সময়ের হিসাব</div><div class=\"small muted\">": "<button class=\"item\" data-act=\"set-prayer\"><div class=\"grow\"><div class=\"t\">Prayer time calculation</div><div class=\"small muted\">", "করাচি পদ্ধতি": "Karachi method", "উম্মুল কুরা পদ্ধতি": "Umm al-Qura method", " · আসর ": " · Asr ", "হানাফি": "Hanafi", "সাধারণ": "Standard", "<div class=\"card stack\"><h2>ব্যাকআপ</h2><p class=\"muted small\">সব তথ্য একটি ফাইলে নামিয়ে রাখতে পারেন, পরে ফেরত আনা যায়। ফাইল না নামলে লেখা কপি করে কোথাও রেখে দিন। ভল্টের তথ্য এনক্রিপ্টই থাকে।</p><div class=\"row\"><button class=\"btn grow\" data-act=\"backup\">ফাইল নামান</button><button class=\"btn grow\" data-act=\"restore\">ফাইল থেকে ফেরান</button></div><div class=\"row\"><button class=\"btn grow\" data-act=\"backup-copy\">লেখা কপি করুন</button><button class=\"btn grow\" data-act=\"restore-paste\">লেখা থেকে ফেরান</button></div><input type=\"file\" id=\"restoreIn\" accept=\".json,application/json\" hidden></div>": "<div class=\"card stack\"><h2>Backup</h2><p class=\"muted small\">Save all your data to a file and restore it later. If the file does not download, copy the backup as text and keep it somewhere safe. Vault data stays encrypted.</p><div class=\"row\"><button class=\"btn grow\" data-act=\"backup\">Download file</button><button class=\"btn grow\" data-act=\"restore\">Restore from file</button></div><div class=\"row\"><button class=\"btn grow\" data-act=\"backup-copy\">Copy as text</button><button class=\"btn grow\" data-act=\"restore-paste\">Restore from text</button></div><input type=\"file\" id=\"restoreIn\" accept=\".json,application/json\" hidden></div>", "<div class=\"card stack\"><h2>তথ্য কোথায় থাকে</h2><p class=\"muted small\">সব তথ্য শুধু এই ফোনেই সংরক্ষিত হয়, কোনো সার্ভারে যায় না। অ্যাপ মুছে ফেললে বা ব্রাউজারের ডাটা পরিষ্কার করলে তথ্য চলে যেতে পারে, তাই মাঝে মাঝে ব্যাকআপ নিয়ে রাখুন।</p></div>": "<div class=\"card stack\"><h2>Where your data lives</h2><p class=\"muted small\">All data is stored only on this phone and never sent to a server. Deleting the app or clearing browser data can erase it, so take a backup now and then.</p></div>", "<button class=\"btn danger block\" data-act=\"wipe\">সব তথ্য মুছে ফেলুন</button></div>": "<button class=\"btn danger block\" data-act=\"wipe\">Erase all data</button></div>", "খরচ বদলান": "Edit expense", "নতুন খরচ": "New expense", "টাকা": "Amount", "খাত": "Category", "বিবরণ (ঐচ্ছিক)": "Description (optional)", "তারিখ": "Date", "কাজ বদলান": "Edit task", "নতুন কাজ": "New task", "কাজের নাম": "Task name", "সময়": "Time", "অভ্যাস বদলান": "Edit habit", "নতুন অভ্যাস": "New habit", "অভ্যাসের নাম": "Habit name", "লেনদেন বদলান": "Edit entry", "নতুন লেনদেন": "New entry", "কার সাথে": "With whom", "ধরন": "Type", "আমি পাব": "I'm owed", "আমি দেব": "I owe", "নোট (ঐচ্ছিক)": "Note (optional)", "নোট": "Note", "নতুন নোট": "New note", "শিরোনাম": "Title", "বিস্তারিত": "Details", "ইকামা": "Iqama", "পাসপোর্ট": "Passport", "ড্রাইভিং লাইসেন্স": "Driving license", "স্বাস্থ্য বিমা": "Health insurance", "গাড়ির ইস্তিমারা": "Vehicle registration", "গাড়ির বিমা": "Car insurance", "ভিসা": "Visa", "ডকুমেন্ট বদলান": "Edit document", "নতুন ডকুমেন্ট": "New document", "নাম": "Name", "মেয়াদ শেষের তারিখ": "Expiry date", "এন্ট্রি বদলান": "Edit entry", "নতুন এন্ট্রি": "New entry", "সাইট বা অ্যাপ": "Site or app", "ইউজারনেম বা ইমেইল": "Username or email", "পাসওয়ার্ড": "Password", "নিশ্চিত? আবার চাপুন": "Sure? Tap again", "নতুন ওষুধ": "New medicine", "ওষুধের নাম": "Medicine name", "কখন খান (ঐচ্ছিক)": "When you take it (optional)", "placeholder=\"যেমন: রাতে খাবারের পর\"": "placeholder=\"e.g. at night after dinner\"", "ওষুধ বদলান": "Edit medicine", "কখন খান": "When you take it", "গত রাতের ঘুম": "Last night's sleep", "কত ঘণ্টা": "How many hours", "ওজন লিখুন": "Log weight", "কেজি": "kg", "ওজন বদলান": "Edit weight", "হিসাবের নিয়ম": "Calculation rules", "মূল বেতন (মাসে)": "Basic salary (per month)", "গুণক (১.৫)": "Multiplier (1.5)", "মাসে কত দিন ধরব": "Days per month", "দিনে কত ঘণ্টা": "Hours per day", "আজকের রেট": "Today's rate", "১ ": "1 ", " = কত টাকা": " = how many taka", "নাম, মুদ্রা, বাজেট": "Name, currency, budget", "আপনার নাম (ঐচ্ছিক)": "Your name (optional)", "মুদ্রার নাম": "Currency name", "মাসিক খরচের বাজেট (০ হলে বন্ধ)": "Monthly spending budget (0 = off)", "দিনে পানির লক্ষ্য (গ্লাস)": "Daily water goal (glasses)", "নামাজের সময়ের হিসাব": "Prayer time calculation", "শহর": "City", "অক্ষাংশ": "Latitude", "দ্রাঘিমাংশ": "Longitude", "সময় অঞ্চল (UTC থেকে ঘণ্টা)": "Time zone (hours from UTC)", "পদ্ধতি": "Method", "উম্মুল কুরা (সৌদি আরব)": "Umm al-Qura (Saudi Arabia)", "করাচি (বাংলাদেশ, পাকিস্তান)": "Karachi (Bangladesh, Pakistan)", "আসরের হিসাব": "Asr calculation", "সাধারণ (শাফেয়ী, মালিকি, হাম্বলি)": "Standard (Shafi'i, Maliki, Hanbali)", "ব্যাকআপ ফাইল তৈরি হয়েছে": "Backup file created", "ব্যাকআপ নামানো যায়নি": "Could not download the backup", "ব্যাকআপ কপি হয়েছে, কোথাও পেস্ট করে রাখুন": "Backup copied. Paste it somewhere safe.", "কপি করা যায়নি": "Could not copy", "লেখা থেকে ফেরান": "Restore from text", "কপি করা ব্যাকআপ এখানে পেস্ট করুন": "Paste the copied backup here", "তথ্য ফেরত এসেছে": "Data restored", "লেখাটি ঠিক নয়": "That text is not a valid backup", "সব তথ্য মুছবেন?": "Erase all data?", "<p class=\"muted\">খরচ, নোট, অভ্যাস, ভল্টসহ সব তথ্য এই অ্যাপ থেকে মুছে যাবে। আগে ব্যাকআপ নিয়ে রাখুন।</p>": "<p class=\"muted\">All data, including expenses, notes, habits and the vault, will be erased from this app. Take a backup first.</p>", "ভল্টের পিন": "Vault PIN", "<p class=\"muted small\">অন্তত ৪ অঙ্ক। পিন ভুললে তথ্য ফেরত আসবে না।</p>": "<p class=\"muted small\">At least 4 digits. If you forget the PIN the data cannot be recovered.</p>", "পিন": "PIN", "আবার লিখুন": "Enter again", "পিন কমপক্ষে ৪ অঙ্কের হতে হবে": "The PIN must be at least 4 digits", "দুইবারের পিন মেলেনি": "The two PINs do not match", "ভল্ট তৈরি করা যায়নি": "Could not create the vault", "ভল্ট খুলুন": "Unlock vault", "পিন ভুল": "Wrong PIN", "ভল্ট মুছবেন?": "Erase the vault?", "<p class=\"muted\">সব পাসওয়ার্ড এন্ট্রি মুছে যাবে এবং নতুন পিন দিয়ে শুরু করতে হবে।</p>": "<p class=\"muted\">All password entries will be erased and you will start again with a new PIN.</p>", "পাসওয়ার্ড কপি হয়েছে": "Password copied", "কপি হয়নি, দেখে নিন": "Could not copy, check it on screen", "ওভারটাইম বদলান": "Edit overtime", "ওভারটাইম যোগ": "Add overtime", "কী যোগ করবেন?": "What do you want to add?", "<div class=\"stack\"><button type=\"button\" class=\"btn block\" data-act=\"q-exp\">খরচ লিখুন</button><button type=\"button\" class=\"btn block\" data-act=\"q-task\">নতুন কাজ</button><button type=\"button\" class=\"btn block\" data-act=\"q-note\">নোট লিখুন</button><button type=\"button\" class=\"btn block\" data-act=\"q-water\">এক গ্লাস পানি</button></div>": "<div class=\"stack\"><button type=\"button\" class=\"btn block\" data-act=\"q-exp\">Add expense</button><button type=\"button\" class=\"btn block\" data-act=\"q-task\">New task</button><button type=\"button\" class=\"btn block\" data-act=\"q-note\">Write a note</button><button type=\"button\" class=\"btn block\" data-act=\"q-water\">One glass of water</button></div>", "ফাইলটি ঠিক নয়": "That file is not a valid backup", "নতুন যোগ করুন": "Add new", "আমার দিনলিপি": "My Daily Log"};
+const tt=s=>(LANG==='en'&&EN[s]!==undefined)?EN[s]:s;
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>iso(new Date());
+const dt=s=>new Date(s+'T12:00:00');
+const addDays=(s,n)=>{const d=dt(s);d.setDate(d.getDate()+n);return iso(d)};
+const daysBetween=(a,b)=>Math.round((dt(b)-dt(a))/864e5);
+const fmt=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
+const WD=[tt('রবিবার'),tt('সোমবার'),tt('মঙ্গলবার'),tt('বুধবার'),tt('বৃহস্পতিবার'),tt('শুক্রবার'),tt('শনিবার')];
+const MON=[tt('জানুয়ারি'),tt('ফেব্রুয়ারি'),tt('মার্চ'),tt('এপ্রিল'),tt('মে'),tt('জুন'),tt('জুলাই'),tt('আগস্ট'),tt('সেপ্টেম্বর'),tt('অক্টোবর'),tt('নভেম্বর'),tt('ডিসেম্বর')];
+const dlabel=s=>{const d=dt(s);return d.getDate()+' '+MON[d.getMonth()]};
+const mlabel=m=>{const[y,mm]=m.split('-').map(Number);return MON[mm-1]+' '+y};
+const num=v=>{const n=parseFloat(String(v).replace(/,/g,''));return isFinite(n)?n:0};
+
+const P={
+  home:'<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',
+  wallet:'<path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1"/>',
+  habit:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
+  tasks:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1 1 2-2M3.5 12l1 1 2-2M3.5 18l1 1 2-2"/>',
+  grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
+  book:'<path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/>',
+  note:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  id:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.5-2 5.5-2 6 0M14 10h4M14 14h3"/>',
+  heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+  cart:'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.4 11h11l2-8H6"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  fx:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  left:'<path d="M15 5l-7 7 7 7"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'
+};
+const ic=(n,s)=>'<svg class="ic" width="'+(s||22)+'" height="'+(s||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[n]+'</svg>';
+
+/* ---------- state ---------- */
+const CATS=[['food',tt('খাবার')],['grocery',tt('বাজার')],['transport',tt('যাতায়াত')],['phone',tt('মোবাইল ও ইন্টারনেট')],['rent',tt('বাসা ভাড়া')],['remit',tt('দেশে পাঠানো')],['medical',tt('চিকিৎসা')],['shopping',tt('কেনাকাটা')],['other',tt('অন্যান্য')]];
+const catName=id=>(CATS.find(c=>c[0]===id)||['',tt('অন্যান্য')])[1];
+const DEF=()=>({v:1,updated:0,
+  settings:{name:'',city:'riyadh',lat:24.7136,lng:46.6753,tz:3,method:'umm',asr:1,rate:0,rateDate:'',budget:0,waterGoal:8,cur:'SAR',
+    ot:{basic:0,mult:1.5,div:30,hpd:8}},
+  expenses:[],debts:[],
+  habits:[{id:'h1',name:tt('কুরআন তিলাওয়াত'),days:{}},{id:'h2',name:tt('ব্যায়াম বা হাঁটা'),days:{}},{id:'h3',name:tt('সকালের জিকির'),days:{}}],
+  prayers:{},tasks:[],notes:[],vault:null,docs:[],
+  health:{water:{},weights:[],sleep:{},meds:[]},shop:[],otlog:[]});
+function merge(o){
+  const d=DEF(); o=o||{};
+  const r=Object.assign(d,o);
+  r.settings=Object.assign(DEF().settings,o.settings||{});
+  r.settings.ot=Object.assign(DEF().settings.ot,(o.settings&&o.settings.ot)||{});
+  r.health=Object.assign(DEF().health,o.health||{});
+  return r;
+}
+const LS='dinlipi_v1';
+function loadLocal(){try{const j=localStorage.getItem(LS);if(j)return merge(JSON.parse(j))}catch(e){}return DEF()}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+let S=loadLocal();
+let tab='home',sub=null,month=today().slice(0,7),showDone=false,showSettled=false,reveal={};
+
+/* ---------- save ---------- */
+function syncHtml(){return '<button class="langbtn" data-act="lang" aria-label="Language">'+(LANG==='en'?'বাংলা':'EN')+'</button>'}
+function commit(){S.updated=Date.now();saveLocal();render()}
+function commitQuiet(){S.updated=Date.now();saveLocal()}
+
+/* ---------- prayer times ---------- */
+const rad=Math.PI/180;
+const sinD=a=>Math.sin(a*rad),cosD=a=>Math.cos(a*rad),tanD=a=>Math.tan(a*rad);
+const asinD=x=>Math.asin(x)/rad,acosD=x=>Math.acos(x)/rad,atan2D=(y,x)=>Math.atan2(y,x)/rad,acotD=x=>Math.atan(1/x)/rad;
+const fixA=a=>{a=a-360*Math.floor(a/360);return a};
+const fixH=h=>{h=h-24*Math.floor(h/24);return h};
+function julian(y,m,d){if(m<=2){y-=1;m+=12}const A=Math.floor(y/100),B=2-A+Math.floor(A/4);return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5}
+function sunPos(jd){
+  const D=jd-2451545.0,g=fixA(357.529+0.98560028*D),q=fixA(280.459+0.98564736*D);
+  const L=fixA(q+1.915*sinD(g)+0.020*sinD(2*g)),e=23.439-0.00000036*D;
+  const RA=atan2D(cosD(e)*sinD(L),cosD(L))/15;
+  return {decl:asinD(sinD(e)*sinD(L)),eqt:q/15-fixH(RA)};
+}
+function prayerTimes(y,m,d){
+  const st=S.settings,lat=st.lat,lng=st.lng,tz=st.tz;
+  const jd=julian(y,m,d)-lng/(15*24);
+  const sp=t=>sunPos(jd+t/24);
+  const mid=t=>fixH(12-sp(t).eqt);
+  const ang=(a,t,ccw)=>{const dc=sp(t).decl;const v=acosD((-sinD(a)-sinD(dc)*sinD(lat))/(cosD(dc)*cosD(lat)))/15;return mid(t)+(ccw?-v:v)};
+  const asr=(f,t)=>{const dc=sp(t).decl;return ang(-acotD(f+tanD(Math.abs(lat-dc))),t,false)};
+  const fa=st.method==='karachi'?18:18.5;
+  let T={fajr:5,sunrise:6,dhuhr:12,asr:13,maghrib:18};
+  for(let i=0;i<2;i++){
+    T={fajr:ang(fa,T.fajr,true),sunrise:ang(0.833,T.sunrise,true),dhuhr:mid(T.dhuhr),asr:asr(st.asr==2?2:1,T.asr),maghrib:ang(0.833,T.maghrib,false)};
+  }
+  const adj=tz-lng/15;
+  const R={};
+  Object.keys(T).forEach(k=>{R[k]=T[k]+adj});
+  R.isha=st.method==='karachi'?ang(18,18,false)+adj:R.maghrib+1.5;
+  return R;
+}
+function hm(h){
+  let m=Math.round(fixH(h)*60);
+  let hh=Math.floor(m/60)%24,mm=m%60;
+  const ap=hh>=12?'PM':'AM';hh=hh%12;if(hh===0)hh=12;
+  return hh+':'+pad(mm)+' '+ap;
+}
+const PR=[['fajr',tt('ফজর')],['dhuhr',tt('যোহর')],['asr',tt('আসর')],['maghrib',tt('মাগরিব')],['isha',tt('এশা')]];
+function nextPrayer(){
+  const now=Date.now(),tz=S.settings.tz;
+  for(let off=0;off<2;off++){
+    const ds=addDays(today(),off),p=ds.split('-').map(Number),T=prayerTimes(p[0],p[1],p[2]);
+    for(const k of PR){const at=Date.UTC(p[0],p[1]-1,p[2])+(T[k[0]]-tz)*3600000;if(at>now)return {k:k[0],name:k[1],at:at,h:T[k[0]]}}
+  }
+  return null;
+}
+function untilText(at){
+  const mins=Math.max(0,Math.round((at-Date.now())/60000)),h=Math.floor(mins/60),m=mins%60;
+  return (h?h+tt(' ঘণ্টা '):'')+m+tt(' মিনিট বাকি');
+}
+
+/* ---------- misc calcs ---------- */
+function streak(h){
+  let d=today(),n=0;
+  if(!h.days[d])d=addDays(d,-1);
+  while(h.days[d]){n++;d=addDays(d,-1)}
+  return n;
+}
+function sumMonth(m){return S.expenses.filter(e=>e.date.slice(0,7)===m).reduce((a,e)=>a+e.amt,0)}
+function dueState(t){
+  if(t.done||!t.due)return '';
+  const n=daysBetween(today(),t.due);
+  return n<0?'bad':n===0?'warn':'';
+}
+const water=()=>S.health.water[today()]||0;
+const prayerDone=(d,k)=>!!(S.prayers[d]&&S.prayers[d][k]);
+
+/* ---------- UI primitives ---------- */
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+const fld=(label,name,val,type,extra)=>'<label class="fld"><span>'+label+'</span><input name="'+name+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'" '+(extra||'')+'></label>';
+const money=(label,name,val)=>fld(label,name,val||'','number','inputmode="decimal" step="any" min="0"');
+const area=(label,name,val,rows)=>'<label class="fld"><span>'+label+'</span><textarea name="'+name+'" rows="'+(rows||6)+'">'+esc(val||'')+'</textarea></label>';
+const sel=(label,name,opts,val)=>'<label class="fld"><span>'+label+'</span><select name="'+name+'">'+opts.map(o=>'<option value="'+esc(o[0])+'"'+(String(o[0])===String(val)?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select></label>';
+const empty=(t,s)=>'<div class="empty"><b>'+t+'</b>'+s+'</div>';
+function head(title,subt,backBtn){
+  return (backBtn?'<button class="back" data-act="back">'+ic('left',20)+tt('আরও</button>'):'')+'<div class="top"><div><h1>'+title+'</h1>'+(subt?'<p class="sub">'+subt+'</p>':'')+'</div>'+syncHtml()+'</div>';
+}
+
+let sheetCfg=null;
+function openSheet(title,body,onSubmit,onDelete){
+  sheetCfg={onSubmit:onSubmit,onDelete:onDelete,armed:false};
+  $('#sheet').innerHTML='<div class="scrim" data-act="sheet-close"></div><form class="panel" id="sheetForm" autocomplete="off"><div class="grab"></div><h2>'+esc(title)+'</h2>'+body+'<p class="err" id="sheetErr" hidden></p><div class="row-btns">'+(onDelete?tt('<button type="button" class="btn danger" data-act="sheet-del" id="sheetDel">মুছুন</button>'):'')+tt('<button type="submit" class="btn primary">সংরক্ষণ</button></div></form>');
+  $('#sheet').hidden=false;document.body.classList.add('lock');
+  const f=$('#sheetForm');
+  f.addEventListener('submit',e=>{
+    e.preventDefault();
+    const o=Object.fromEntries(new FormData(f));
+    const r=sheetCfg.onSubmit(o);
+    if(r&&typeof r.then==='function'){r.then(ok=>{if(ok!==false)closeSheet()})}
+    else if(r!==false)closeSheet();
+  });
+  const first=f.querySelector('input:not([type=hidden]),textarea');
+  if(first&&!first.value)setTimeout(()=>first.focus(),60);
+}
+function closeSheet(){$('#sheet').hidden=true;$('#sheet').innerHTML='';document.body.classList.remove('lock');sheetCfg=null}
+function sheetErr(t){const e=$('#sheetErr');if(e){e.textContent=t;e.hidden=!t}}
+
+/* ---------- views ---------- */
+function vHome(){
+  const t=today(),d=new Date(),np=nextPrayer(),st=S.settings;
+  const tasks=S.tasks.filter(x=>!x.done&&x.due&&x.due<=t).sort((a,b)=>a.due.localeCompare(b.due));
+  const docsSoon=S.docs.map(x=>({x:x,n:daysBetween(t,x.expiry)})).filter(o=>o.n<=60).sort((a,b)=>a.n-b.n);
+  const medsDue=S.health.meds.filter(m=>!(m.taken&&m.taken[t]));
+  const get=S.debts.filter(x=>!x.done&&x.dir==='get').reduce((a,x)=>a+x.amt,0);
+  const give=S.debts.filter(x=>!x.done&&x.dir==='give').reduce((a,x)=>a+x.amt,0);
+  const todaySpend=S.expenses.filter(e=>e.date===t).reduce((a,e)=>a+e.amt,0);
+  const mSpend=sumMonth(t.slice(0,7));
+  const w=water(),goal=st.waterGoal||8;
+  let h='<div class="top"><div><p class="sub">'+WD[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()]+'</p><h1>'+(st.name?tt('আসসালামু আলাইকুম, ')+esc(st.name):tt('আজকের দিন'))+'</h1></div>'+syncHtml()+'</div>';
+  h+='<div class="stack">';
+  h+=tt('<div class="hero"><p class="label">পরবর্তী নামাজ</p>')+(np?'<div class="row between" style="align-items:flex-end"><div class="big">'+np.name+'</div><div style="text-align:right"><div class="big num" style="font-size:1.4rem">'+hm(np.h)+'</div><div class="small" style="opacity:.85">'+untilText(np.at)+'</div></div></div>':'<div class="big">—</div>')+
+    '<div class="pr-row">'+PR.map(k=>'<button class="pr'+(prayerDone(t,k[0])?' done':'')+'" data-act="pray" data-k="'+k[0]+'" data-d="'+t+'" aria-pressed="'+prayerDone(t,k[0])+'"><b>'+k[1]+'</b><span class="num">'+hm(prayerTimes(d.getFullYear(),d.getMonth()+1,d.getDate())[k[0]]).replace(' AM','').replace(' PM','')+'</span></button>').join('')+'</div></div>';
+  h+='<div class="grid2">'+
+    tt('<div class="card"><p class="label">আজকের খরচ</p><div class="big num">')+fmt(todaySpend)+tt('</div><p class="small muted">এই মাসে ')+fmt(mSpend)+' '+esc(st.cur)+(st.budget>0?' / '+fmt(st.budget):'')+'</p></div>'+
+    tt('<div class="card"><p class="label">পানি</p><div class="big num">')+w+'<span class="muted" style="font-size:1rem;font-weight:500"> / '+goal+'</span></div><button class="btn sm" style="margin-top:6px" data-act="water" data-n="1">'+ic('drop',18)+tt('এক গ্লাস</button></div>')+
+    tt('<div class="card"><p class="label">আমি পাব</p><div class="big num" style="color:var(--good)">')+fmt(get)+'</div></div>'+
+    tt('<div class="card"><p class="label">আমি দেব</p><div class="big num" style="color:var(--bad)">')+fmt(give)+'</div></div></div>';
+  h+=tt('<div class="sec"><h2>করণীয়</h2><button class="link" data-act="tab" data-tab="task">সব দেখুন</button></div><div class="card">');
+  h+=tasks.length?'<div class="list">'+tasks.slice(0,5).map(taskRow).join('')+'</div>':empty(tt('আজ কোনো জরুরি কাজ নেই'),tt('নতুন কাজ যোগ করতে নিচের + চাপুন।'));
+  h+='</div>';
+  if(docsSoon.length||medsDue.length){
+    h+=tt('<div class="sec"><h2>মনে করিয়ে দিচ্ছি</h2></div><div class="card"><div class="list">');
+    docsSoon.slice(0,4).forEach(o=>{h+='<div class="item"><div class="grow"><div class="t">'+esc(o.x.name)+tt('</div><div class="small muted">মেয়াদ ')+dlabel(o.x.expiry)+'</div></div><span class="chip '+(o.n<0?'bad':o.n<=30?'bad':'warn')+'">'+(o.n<0?(-o.n)+tt(' দিন আগে শেষ'):o.n+tt(' দিন বাকি'))+'</span></div>'});
+    medsDue.slice(0,4).forEach(m=>{h+='<button class="item" data-act="med" data-id="'+m.id+'"><div class="grow"><div class="t">'+esc(m.name)+tt('</div><div class="small muted">ওষুধ')+(m.time?' · '+esc(m.time):'')+tt('</div></div><span class="chip acc">খেয়েছি</span></button>')});
+    h+='</div></div>';
+  }
+  h+='</div>';
+  return h;
+}
+function taskRow(t){
+  const ds=dueState(t);
+  return '<div class="item"><button class="check'+(t.done?' on':'')+'" data-act="task-done" data-id="'+t.id+tt('" aria-label="সম্পন্ন">')+ic('check',16)+'</button><button class="grow" style="border:0;background:none;text-align:left;padding:0;min-width:0" data-act="task-edit" data-id="'+t.id+'"><div class="t" style="'+(t.done?'text-decoration:line-through;color:var(--muted)':'')+'">'+esc(t.title)+'</div>'+((t.due||t.time)?'<div class="small muted">'+(t.due?dlabel(t.due):'')+(t.time?' · '+esc(t.time):'')+'</div>':'')+'</button>'+(ds?'<span class="chip '+ds+'">'+(ds==='bad'?tt('মেয়াদ পার'):tt('আজ'))+'</span>':'')+'</div>';
+}
+
+function vExp(){
+  const list=S.expenses.filter(e=>e.date.slice(0,7)===month).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  const total=list.reduce((a,e)=>a+e.amt,0),st=S.settings;
+  const by={};list.forEach(e=>{by[e.cat]=(by[e.cat]||0)+e.amt});
+  const cats=Object.keys(by).sort((a,b)=>by[b]-by[a]),mx=cats.length?by[cats[0]]:1;
+  let h=head(tt('খরচ'),tt('মাসের হিসাব'));
+  h+=tt('<div class="stack"><div class="card"><div class="row between"><button class="icon-btn" data-act="month" data-n="-1" aria-label="আগের মাস">')+ic('left',20)+'</button><h2>'+mlabel(month)+tt('</h2><button class="icon-btn" data-act="month" data-n="1" aria-label="পরের মাস" style="transform:scaleX(-1)">')+ic('left',20)+'</button></div>';
+  h+=tt('<div style="margin-top:14px"><p class="label">মোট খরচ</p><div class="big num">')+fmt(total)+' <span class="muted" style="font-size:1rem;font-weight:500">'+esc(st.cur)+'</span></div></div>';
+  if(st.budget>0){const pc=Math.min(100,total/st.budget*100);h+='<div style="margin-top:12px"><div class="bar'+(total>st.budget?' over':'')+'"><i style="width:'+pc+tt('%"></i></div><p class="small muted" style="margin-top:6px">বাজেট ')+fmt(st.budget)+' · '+(total>st.budget?fmt(total-st.budget)+tt(' বেশি খরচ হয়েছে'):fmt(st.budget-total)+tt(' বাকি'))+'</p></div>'}
+  h+='</div>';
+  if(cats.length){h+=tt('<div class="card stack"><h2>কোন খাতে কত</h2>')+cats.map(c=>'<div class="cat"><span>'+catName(c)+'</span><span class="amt num">'+fmt(by[c])+'</span><div class="bar"><i style="width:'+(by[c]/mx*100)+'%"></i></div></div>').join('')+'</div>'}
+  h+='<div class="card">'+(list.length?'<div class="list">'+list.map(e=>'<button class="item" data-act="exp-edit" data-id="'+e.id+'"><div class="grow"><div class="t">'+esc(e.note||catName(e.cat))+'</div><div class="small muted">'+dlabel(e.date)+' · '+catName(e.cat)+'</div></div><span class="amt out num">'+fmt(e.amt)+'</span></button>').join('')+'</div>':empty(tt('এই মাসে কোনো খরচ নেই'),tt('+ বোতাম চেপে প্রথম খরচ লিখুন।')))+'</div></div>';
+  return h;
+}
+
+function vHabit(){
+  const t=today(),d=new Date(),T=prayerTimes(d.getFullYear(),d.getMonth()+1,d.getDate()),st=S.settings;
+  const days=[];for(let i=6;i>=0;i--)days.push(addDays(t,-i));
+  let h=head(tt('অভ্যাস'),tt('প্রতিদিনের নিয়মিত কাজ'));
+  h+=tt('<div class="stack"><div class="card"><div class="row between"><h2>নামাজ</h2><span class="chip acc">')+esc(cityName())+'</span></div><div class="list" style="margin-top:4px">';
+  h+=tt('<div class="item"><div class="grow muted small">সূর্যোদয়</div><span class="num muted">')+hm(T.sunrise)+'</span></div>';
+  PR.forEach(k=>{h+='<button class="item" data-act="pray" data-k="'+k[0]+'" data-d="'+t+'"><span class="check'+(prayerDone(t,k[0])?' on':'')+'">'+ic('check',16)+'</span><div class="grow t">'+k[1]+'</div><span class="num">'+hm(T[k[0]])+'</span></button>'});
+  h+=tt('</div><p class="small muted" style="margin-top:8px">সময় হিসাব করা, অ্যাপ বন্ধ থাকলে অ্যালার্ম বাজবে না। সেটিংসে শহর ও হিসাবের পদ্ধতি বদলানো যায়।</p></div>');
+  h+=tt('<div class="sec"><h2>আমার অভ্যাস</h2><button class="link" data-act="habit-add">+ নতুন</button></div>');
+  if(!S.habits.length)h+='<div class="card">'+empty(tt('কোনো অভ্যাস নেই'),tt('"নতুন" চেপে একটি অভ্যাস যোগ করুন।'))+'</div>';
+  S.habits.forEach(x=>{
+    const s=streak(x);
+    h+='<div class="card stack" style="gap:10px"><div class="row between"><button style="border:0;background:none;padding:0;text-align:left;min-width:0" data-act="habit-edit" data-id="'+x.id+'"><h3 style="overflow-wrap:anywhere">'+esc(x.name)+'</h3></button><span class="chip '+(s>0?'good':'')+'">'+s+tt(' দিন টানা</span></div><div class="dots">')+days.map(dd=>'<button class="dot'+(x.days[dd]?' on':'')+(dd===t?' today':'')+'" data-act="habit-tick" data-id="'+x.id+'" data-d="'+dd+'" aria-label="'+dlabel(dd)+'">'+dt(dd).getDate()+'</button>').join('')+'</div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+function cityName(){const c=CITIES.find(c=>c[0]===S.settings.city);return c?c[1]:tt('নিজের অবস্থান')}
+
+function vTask(){
+  const open=S.tasks.filter(x=>!x.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.time||'').localeCompare(b.time||''));
+  const done=S.tasks.filter(x=>x.done).slice(-20).reverse();
+  let h=head(tt('কাজ'),tt('করণীয় তালিকা'));
+  h+='<div class="stack"><div class="card">'+(open.length?'<div class="list">'+open.map(taskRow).join('')+'</div>':empty(tt('সব কাজ শেষ'),tt('নতুন কাজ যোগ করতে + চাপুন।')))+'</div>';
+  if(done.length){h+='<button class="link" data-act="toggle-done" style="text-align:left">'+(showDone?tt('সম্পন্ন কাজ লুকান'):tt('সম্পন্ন কাজ দেখুন (')+done.length+')')+'</button>';
+    if(showDone)h+='<div class="card"><div class="list">'+done.map(taskRow).join('')+tt('</div><button class="btn sm danger" style="margin-top:8px" data-act="task-clear">সম্পন্ন কাজ মুছুন</button></div>')}
+  h+=tt('<p class="small muted">নির্ধারিত দিনে কাজটি হোম পেজে দেখা যায়। ফোন বাজাতে হলে ফোনের ঘড়ি অ্যাপে অ্যালার্ম দিন।</p></div>');
+  return h;
+}
+
+const TILES=[['ledger',tt('বাকির খাতা'),tt('কে কত পাবে বা দেবে'),'book'],['notes',tt('নোট ও ডায়েরি'),tt('লিখে রাখুন'),'note'],['vault',tt('পাসওয়ার্ড ভল্ট'),tt('পিন দিয়ে সুরক্ষিত'),'lock'],['docs',tt('ডকুমেন্টের মেয়াদ'),tt('ইকামা, পাসপোর্ট'),'id'],['health',tt('স্বাস্থ্য'),tt('ওজন, ঘুম, ওষুধ'),'heart'],['shop',tt('বাজারের তালিকা'),tt('কী কিনতে হবে'),'cart'],['ot',tt('ওভারটাইম'),tt('বেতনের হিসাব'),'clock'],['fx',tt('মুদ্রা কনভার্টার'),tt('রিয়াল ও টাকা'),'fx'],['set',tt('সেটিংস'),tt('শহর, বাজেট, ব্যাকআপ'),'gear']];
+function vMore(){
+  return head(tt('আরও'),tt('সব সরঞ্জাম'))+'<div class="tiles">'+TILES.map(t=>'<button class="tile" data-act="sub" data-sub="'+t[0]+'"><span class="ib">'+ic(t[3])+'</span><b>'+t[1]+'</b><span>'+t[2]+'</span></button>').join('')+'</div>';
+}
+
+function vLedger(){
+  const open=S.debts.filter(x=>!x.done),done=S.debts.filter(x=>x.done);
+  const get=open.filter(x=>x.dir==='get').reduce((a,x)=>a+x.amt,0),give=open.filter(x=>x.dir==='give').reduce((a,x)=>a+x.amt,0);
+  const row=x=>'<div class="item"><button class="check'+(x.done?' on':'')+'" data-act="debt-done" data-id="'+x.id+tt('" aria-label="মিটেছে">')+ic('check',16)+'</button><button class="grow" style="border:0;background:none;text-align:left;padding:0;min-width:0" data-act="debt-edit" data-id="'+x.id+'"><div class="t">'+esc(x.who)+'</div><div class="small muted">'+dlabel(x.date)+(x.note?' · '+esc(x.note):'')+'</div></button><span class="amt num '+(x.dir==='get'?'in':'out')+'">'+(x.dir==='get'?'+':'−')+fmt(x.amt)+'</span></div>';
+  let h=head(tt('বাকির খাতা'),'',true)+tt('<div class="stack"><div class="grid2"><div class="card"><p class="label">আমি পাব</p><div class="big num" style="color:var(--good)">')+fmt(get)+tt('</div></div><div class="card"><p class="label">আমি দেব</p><div class="big num" style="color:var(--bad)">')+fmt(give)+'</div></div></div>';
+  h+='<div class="card">'+(open.length?'<div class="list">'+open.map(row).join('')+'</div>':empty(tt('কোনো বাকি নেই'),tt('+ চেপে লেনদেন লিখুন।')))+'</div>';
+  if(done.length){h+='<button class="link" data-act="toggle-settled" style="text-align:left">'+(showSettled?tt('মিটে যাওয়াগুলো লুকান'):tt('মিটে যাওয়া (')+done.length+')')+'</button>';if(showSettled)h+='<div class="card"><div class="list">'+done.map(row).join('')+'</div></div>'}
+  return h+'</div>';
+}
+
+function vNotes(){
+  const list=S.notes.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  let h=head(tt('নোট ও ডায়েরি'),'',true)+tt('<div class="stack"><input class="search" id="noteSearch" type="search" placeholder="নোট খুঁজুন" aria-label="নোট খুঁজুন">');
+  h+=list.length?list.map(n=>'<button class="card note-item" style="text-align:left;border:0;width:100%" data-act="note-edit" data-id="'+n.id+'" data-q="'+esc((n.title+' '+n.body).toLowerCase())+'"><div class="row between"><h3>'+esc(n.title||tt('শিরোনামহীন'))+'</h3><span class="small muted">'+dlabel(n.date)+'</span></div><p class="small muted" style="margin-top:4px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">'+esc(n.body)+'</p></button>').join(''):'<div class="card">'+empty(tt('কোনো নোট নেই'),tt('+ চেপে প্রথম নোট বা আজকের ডায়েরি লিখুন।'))+'</div>';
+  return h+'</div>';
+}
+
+/* vault */
+const V={key:null,salt:null,list:[],open:false};
+const enc=new TextEncoder(),dec=new TextDecoder();
+function b64(u){let s='';u.forEach(b=>{s+=String.fromCharCode(b)});return btoa(s)}
+function unb64(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
+const hasCrypto=()=>!!(window.crypto&&window.crypto.subtle);
+async function vKey(pin,salt){
+  const km=await crypto.subtle.importKey('raw',enc.encode(pin),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:150000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function vaultSave(){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},V.key,enc.encode(JSON.stringify(V.list)));
+  S.vault={salt:b64(V.salt),iv:b64(iv),ct:b64(new Uint8Array(ct))};
+  commitQuiet();
+}
+async function vaultCreate(pin){V.salt=crypto.getRandomValues(new Uint8Array(16));V.key=await vKey(pin,V.salt);V.list=[];V.open=true;await vaultSave()}
+async function vaultUnlock(pin){
+  const v=S.vault,salt=unb64(v.salt),key=await vKey(pin,salt);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(v.iv)},key,unb64(v.ct));
+  V.list=JSON.parse(dec.decode(pt));V.key=key;V.salt=salt;V.open=true;
+}
+function vaultLock(){V.key=null;V.salt=null;V.list=[];V.open=false;reveal={}}
+function vVault(){
+  let h=head(tt('পাসওয়ার্ড ভল্ট'),'',true)+'<div class="stack">';
+  if(!hasCrypto())return h+'<div class="card">'+empty(tt('এই ব্রাউজারে ভল্ট চলবে না'),tt('এনক্রিপশন সুবিধা পাওয়া যাচ্ছে না।'))+'</div></div>';
+  if(!S.vault){
+    h+=tt('<div class="card stack"><h2>পিন দিয়ে শুরু করুন</h2><p class="muted">আপনার দেওয়া পিন দিয়ে সব তথ্য এনক্রিপ্ট হয়ে সংরক্ষিত হবে। পিন ভুলে গেলে তথ্য ফেরত পাওয়া যাবে না, কেউ উদ্ধার করতে পারবে না।</p><button class="btn primary block" data-act="vault-create">পিন ঠিক করুন</button></div>');
+  }else if(!V.open){
+    h+=tt('<div class="card stack"><h2>ভল্ট তালাবদ্ধ</h2><p class="muted">পিন দিয়ে খুলুন।</p><button class="btn primary block" data-act="vault-unlock">')+ic('lock',18)+tt('খুলুন</button><button class="link" data-act="vault-reset" style="text-align:left">পিন ভুলে গেছি, ভল্ট মুছে নতুন করব</button></div>');
+  }else{
+    h+='<div class="row between"><button class="btn sm" data-act="vault-lock">'+ic('lock',16)+tt('তালা দিন</button><button class="btn sm primary" data-act="vault-add">')+ic('plus',16)+tt('নতুন</button></div><div class="card">')+(V.list.length?'<div class="list">'+V.list.map(e=>'<div class="item" style="align-items:flex-start"><div class="grow"><div class="t">'+esc(e.site)+'</div><div class="small muted" style="overflow-wrap:anywhere">'+esc(e.user)+'</div><div class="mono" style="overflow-wrap:anywhere">'+(reveal[e.id]?esc(e.pass):'••••••••')+'</div></div><div class="row" style="gap:6px"><button class="icon-btn" data-act="vault-show" data-id="'+e.id+tt('" aria-label="দেখুন">')+ic('eye',18)+'</button><button class="icon-btn" data-act="vault-copy" data-id="'+e.id+tt('" aria-label="কপি">')+ic('copy',18)+'</button><button class="icon-btn" data-act="vault-edit" data-id="'+e.id+tt('" aria-label="সম্পাদনা" style="font-weight:700">…</button></div></div>')).join('')+'</div>':empty(tt('ভল্ট খালি'),tt('নতুন চেপে প্রথম এন্ট্রি যোগ করুন।')))+'</div>';
+  }
+  return h+'</div>';
+}
+
+function vDocs(){
+  const list=S.docs.map(x=>({x:x,n:daysBetween(today(),x.expiry)})).sort((a,b)=>a.n-b.n);
+  return head(tt('ডকুমেন্টের মেয়াদ'),tt('ইকামা, পাসপোর্ট, লাইসেন্স'),true)+'<div class="stack"><div class="card">'+(list.length?'<div class="list">'+list.map(o=>'<button class="item" data-act="doc-edit" data-id="'+o.x.id+'"><div class="grow"><div class="t">'+esc(o.x.name)+tt('</div><div class="small muted">মেয়াদ ')+dlabel(o.x.expiry)+' '+dt(o.x.expiry).getFullYear()+(o.x.note?' · '+esc(o.x.note):'')+'</div></div><span class="chip '+(o.n<=30?'bad':o.n<=90?'warn':'good')+'">'+(o.n<0?(-o.n)+tt(' দিন আগে শেষ'):o.n+tt(' দিন বাকি'))+'</span></button>').join('')+'</div>':empty(tt('কোনো ডকুমেন্ট নেই'),tt('+ চেপে ইকামা বা পাসপোর্টের মেয়াদ যোগ করুন। ৬০ দিন আগে হোম পেজে মনে করিয়ে দেওয়া হবে।')))+'</div></div>';
+}
+
+function spark(arr){
+  if(arr.length<2)return '';
+  const v=arr.map(a=>a.kg),mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),r=(mx-mn)||1,W=300,H=80,px=14;
+  const pts=v.map((x,i)=>[px+i*(W-2*px)/(v.length-1),H-16-(x-mn)/r*(H-34)]);
+  const last=pts[pts.length-1];
+  return '<svg viewBox="0 0 '+W+' '+H+tt('" width="100%" role="img" aria-label="ওজনের পরিবর্তন"><polyline points="')+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="4.5" fill="var(--accent)"/><text x="'+px+'" y="'+(H-2)+'">'+fmt(mn)+tt(' কেজি</text><text x="')+(W-px)+'" y="10" text-anchor="end">'+fmt(mx)+tt(' কেজি</text></svg>');
+}
+function vHealth(){
+  const t=today(),w=water(),goal=S.settings.waterGoal||8,sleep=S.health.sleep[t];
+  const wts=S.health.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(-14);
+  const last=wts[wts.length-1];
+  let h=head(tt('স্বাস্থ্য'),'',true)+'<div class="stack">';
+  h+=tt('<div class="card stack"><div class="row between"><h2>আজ পানি</h2><span class="chip acc num">')+w+' / '+goal+tt(' গ্লাস</span></div><div class="bar"><i style="width:')+Math.min(100,w/goal*100)+'%"></i></div><div class="row"><button class="btn grow" data-act="water" data-n="-1">−</button><button class="btn primary grow" data-act="water" data-n="1">'+ic('drop',18)+tt('+ এক গ্লাস</button></div></div>');
+  h+=tt('<div class="card stack"><div class="row between"><h2>ঘুম</h2><button class="btn sm" data-act="sleep">')+(sleep!=null?tt('বদলান'):tt('লিখুন'))+'</button></div><p class="'+(sleep!=null?'':'muted')+'">'+(sleep!=null?'<span class="big num">'+fmt(sleep)+tt('</span> ঘণ্টা (গত রাত)'):tt('গত রাতে কত ঘণ্টা ঘুমিয়েছেন লিখে রাখুন।'))+'</p></div>';
+  h+=tt('<div class="card stack"><div class="row between"><h2>ওজন</h2><button class="btn sm" data-act="weight-add">+ লিখুন</button></div>')+(last?'<p><span class="big num">'+fmt(last.kg)+tt('</span> কেজি <span class="small muted">· ')+dlabel(last.date)+'</span></p>'+spark(wts)+'<div class="list">'+wts.slice().reverse().slice(0,5).map(x=>'<button class="item" data-act="weight-edit" data-d="'+x.date+'"><span class="grow muted">'+dlabel(x.date)+'</span><span class="num">'+fmt(x.kg)+tt(' কেজি</span></button>')).join('')+'</div>':tt('<p class="muted">ওজন লিখলে এখানে ধারা দেখা যাবে।</p>'))+'</div>';
+  h+=tt('<div class="card stack"><div class="row between"><h2>ওষুধ</h2><button class="btn sm" data-act="med-add">+ নতুন</button></div>')+(S.health.meds.length?'<div class="list">'+S.health.meds.map(m=>'<div class="item"><button class="check'+((m.taken&&m.taken[t])?' on':'')+'" data-act="med" data-id="'+m.id+tt('" aria-label="খেয়েছি">')+ic('check',16)+'</button><button class="grow" style="border:0;background:none;text-align:left;padding:0" data-act="med-edit" data-id="'+m.id+'"><div class="t">'+esc(m.name)+'</div>'+(m.time?'<div class="small muted">'+esc(m.time)+'</div>':'')+'</button></div>').join('')+'</div>':tt('<p class="muted">নিয়মিত ওষুধ থাকলে নাম লিখুন, রোজ খাওয়ার টিক দিন।</p>'))+'</div></div>';
+  return h;
+}
+
+function vShop(){
+  const open=S.shop.filter(x=>!x.done),done=S.shop.filter(x=>x.done);
+  const row=x=>'<div class="item"><button class="check'+(x.done?' on':'')+'" data-act="shop-done" data-id="'+x.id+tt('" aria-label="কেনা হয়েছে">')+ic('check',16)+'</button><div class="grow t" style="'+(x.done?'text-decoration:line-through;color:var(--muted)':'')+'">'+esc(x.name)+'</div><button class="icon-btn" style="border:0;width:36px;height:36px" data-act="shop-del" data-id="'+x.id+tt('" aria-label="মুছুন">×</button></div>');
+  return head(tt('বাজারের তালিকা'),'',true)+tt('<div class="stack"><form class="row" id="shopForm" autocomplete="off"><input class="search grow" id="shopIn" placeholder="যেমন: চাল ৫ কেজি" aria-label="আইটেম" enterkeyhint="done"><button class="btn primary" type="submit">যোগ</button></form><div class="card">')+(S.shop.length?'<div class="list">'+open.map(row).join('')+done.map(row).join('')+'</div>':empty(tt('তালিকা খালি'),tt('কিনতে হবে এমন জিনিস লিখুন।')))+'</div>'+(done.length?tt('<button class="btn sm danger" data-act="shop-clear" style="align-self:flex-start">কেনা জিনিস সরান</button>'):'')+'</div>';
+}
+
+function vOT(){
+  const o=S.settings.ot,m=today().slice(0,7);
+  const logs=S.otlog.filter(x=>x.date.slice(0,7)===m).sort((a,b)=>b.date.localeCompare(a.date));
+  const hrs=logs.reduce((a,x)=>a+x.hrs,0);
+  const hourly=o.basic/(o.div||30)/(o.hpd||8),rate=hourly*o.mult,pay=hrs*rate;
+  return head(tt('ওভারটাইম'),tt('বেতনের হিসাব'),true)+'<div class="stack"><div class="card stack"><div class="row between"><h2>'+mlabel(m)+tt('</h2><button class="btn sm" data-act="ot-set">হিসাবের নিয়ম</button></div>')+
+    (o.basic>0?tt('<div class="grid2"><div><p class="label">ওভারটাইম ঘণ্টা</p><div class="big num">')+fmt(hrs)+tt('</div></div><div><p class="label">ওভারটাইমের টাকা</p><div class="big num" style="color:var(--good)">')+fmt(pay)+tt('</div></div></div><div class="list"><div class="item"><span class="grow muted">ঘণ্টা প্রতি সাধারণ মজুরি</span><span class="num">')+fmt(hourly)+tt('</span></div><div class="item"><span class="grow muted">ওভারটাইম রেট (×')+o.mult+')</span><span class="num">'+fmt(rate)+tt('</span></div><div class="item"><span class="grow t">মূল বেতন + ওভারটাইম</span><span class="num t">')+fmt(o.basic+pay)+'</span></div></div>':tt('<p class="muted">মূল বেতন দিলে ঘণ্টার রেট ও ওভারটাইমের টাকা নিজে হিসাব হবে। "হিসাবের নিয়ম" চেপে শুরু করুন।</p>'))+'</div>'+
+    tt('<div class="row between"><h2 style="font-size:1rem">এই মাসের ওভারটাইম</h2><button class="btn sm primary" data-act="ot-add">')+ic('plus',16)+tt('যোগ</button></div><div class="card">')+(logs.length?'<div class="list">'+logs.map(x=>'<button class="item" data-act="ot-edit" data-id="'+x.id+'"><span class="grow">'+dlabel(x.date)+'</span><span class="num amt">'+fmt(x.hrs)+tt(' ঘণ্টা</span></button>')).join('')+'</div>':empty(tt('এই মাসে কিছু লেখা হয়নি'),tt('কোন দিন কত ঘণ্টা বাড়তি কাজ করলেন লিখুন।')))+tt('</div><p class="small muted">সৌদি শ্রম আইনে ওভারটাইমের রেট সাধারণ ঘণ্টার মজুরির ১.৫ গুণ ধরা হয়। আপনার চুক্তি আলাদা হলে নিয়ম বদলে নিন।</p></div>');
+}
+
+function vFx(){
+  const r=S.settings.rate,cur=esc(S.settings.cur);
+  return head(tt('মুদ্রা কনভার্টার'),'',true)+'<div class="stack"><div class="card stack">'+
+    (r>0?'<label class="fld"><span>'+cur+tt('</span><input id="fxA" type="number" inputmode="decimal" step="any" value="100"></label><label class="fld"><span>টাকা (BDT)</span><input id="fxB" type="number" inputmode="decimal" step="any" value="')+(100*r)+'"></label><div class="chips">'+[50,100,500,1000,2000].map(n=>'<button class="chip acc" data-act="fx-q" data-n="'+n+'" style="border:0;font-size:.9rem;padding:6px 14px">'+n+'</button>').join('')+'</div>':empty(tt('আগে আজকের রেট দিন'),tt('এখানে লাইভ রেট আসে না। ব্যাংক বা এক্সচেঞ্জ হাউসের আজকের রেট নিজে লিখুন, এরপর যেকোনো অঙ্ক বদলে দেখুন।')))+
+    tt('<div class="row between"><div><p class="label">রেট (১ ')+cur+tt(' = টাকা)</p><p class="num"><b>')+(r>0?fmt(r):'—')+'</b>'+(S.settings.rateDate?' <span class="small muted">· '+dlabel(S.settings.rateDate)+'</span>':'')+tt('</p></div><button class="btn sm" data-act="fx-rate">রেট বদলান</button></div></div></div>');
+}
+
+const CITIES=[['riyadh',tt('রিয়াদ'),24.7136,46.6753,3],['jeddah',tt('জেদ্দা'),21.4858,39.1925,3],['makkah',tt('মক্কা'),21.3891,39.8579,3],['madinah',tt('মদিনা'),24.5247,39.5692,3],['dammam',tt('দাম্মাম'),26.4207,50.0888,3],['dhaka',tt('ঢাকা'),23.8103,90.4125,6],['custom',tt('অন্য জায়গা'),0,0,3]];
+function vSet(){
+  const st=S.settings;
+  return head(tt('সেটিংস'),'',true)+'<div class="stack"><div class="card stack"><div class="list">'+
+    tt('<button class="item" data-act="lang"><div class="grow"><div class="t">ভাষা</div><div class="small muted">')+(LANG==='en'?'English · বাংলায় বদলান':'বাংলা · Switch to English')+'</div></div></button>'+
+    tt('<button class="item" data-act="set-profile"><div class="grow"><div class="t">নাম, মুদ্রা, বাজেট</div><div class="small muted">')+(esc(st.name)||tt('নাম দেওয়া নেই'))+' · '+esc(st.cur)+(st.budget>0?tt(' · বাজেট ')+fmt(st.budget):'')+'</div></div></button>'+
+    tt('<button class="item" data-act="set-prayer"><div class="grow"><div class="t">নামাজের সময়ের হিসাব</div><div class="small muted">')+cityName()+' · '+(st.method==='karachi'?tt('করাচি পদ্ধতি'):tt('উম্মুল কুরা পদ্ধতি'))+tt(' · আসর ')+(st.asr==2?tt('হানাফি'):tt('সাধারণ'))+'</div></div></button></div></div>'+
+    tt('<div class="card stack"><h2>ব্যাকআপ</h2><p class="muted small">সব তথ্য একটি ফাইলে নামিয়ে রাখতে পারেন, পরে ফেরত আনা যায়। ফাইল না নামলে লেখা কপি করে কোথাও রেখে দিন। ভল্টের তথ্য এনক্রিপ্টই থাকে।</p><div class="row"><button class="btn grow" data-act="backup">ফাইল নামান</button><button class="btn grow" data-act="restore">ফাইল থেকে ফেরান</button></div><div class="row"><button class="btn grow" data-act="backup-copy">লেখা কপি করুন</button><button class="btn grow" data-act="restore-paste">লেখা থেকে ফেরান</button></div><input type="file" id="restoreIn" accept=".json,application/json" hidden></div>')+
+    tt('<div class="card stack"><h2>তথ্য কোথায় থাকে</h2><p class="muted small">সব তথ্য শুধু এই ফোনেই সংরক্ষিত হয়, কোনো সার্ভারে যায় না। অ্যাপ মুছে ফেললে বা ব্রাউজারের ডাটা পরিষ্কার করলে তথ্য চলে যেতে পারে, তাই মাঝে মাঝে ব্যাকআপ নিয়ে রাখুন।</p></div>')+
+    tt('<button class="btn danger block" data-act="wipe">সব তথ্য মুছে ফেলুন</button></div>');
+}
+
+/* ---------- render ---------- */
+const TABS=[['home',tt('আজ'),'home'],['exp',tt('খরচ'),'wallet'],['habit',tt('অভ্যাস'),'habit'],['task',tt('কাজ'),'tasks'],['more',tt('আরও'),'grid']];
+function view(){
+  if(tab==='home')return vHome();
+  if(tab==='exp')return vExp();
+  if(tab==='habit')return vHabit();
+  if(tab==='task')return vTask();
+  if(sub){const f={ledger:vLedger,notes:vNotes,vault:vVault,docs:vDocs,health:vHealth,shop:vShop,ot:vOT,fx:vFx,set:vSet}[sub];if(f)return f()}
+  return vMore();
+}
+const FAB={home:'quick',exp:'exp-add',task:'task-add',habit:null};
+const SUBFAB={ledger:'debt-add',notes:'note-add',docs:'doc-add'};
+function render(){
+  $('#main').innerHTML=view();
+  $('#tabs').innerHTML=TABS.map(t=>'<button data-act="tab" data-tab="'+t[0]+'" class="'+(tab===t[0]?'on':'')+'" aria-label="'+t[1]+'">'+ic(t[2],22)+'<span>'+t[1]+'</span></button>').join('');
+  const fa=tab==='more'?(sub?SUBFAB[sub]:null):FAB[tab];
+  const fab=$('#fab');fab.hidden=!fa;fab.dataset.fab=fa||'';fab.innerHTML=ic('plus',26);fab.setAttribute('aria-label',tt('নতুন যোগ করুন'));document.title=tt('আমার দিনলিপি');
+}
+
+/* ---------- sheets ---------- */
+function sheetExp(e){
+  const x=e||{date:today(),cat:'food'};
+  openSheet(e?tt('খরচ বদলান'):tt('নতুন খরচ'),money(tt('টাকা'),'amt',x.amt)+sel(tt('খাত'),'cat',CATS,x.cat)+fld(tt('বিবরণ (ঐচ্ছিক)'),'note',x.note)+fld(tt('তারিখ'),'date',x.date,'date','required'),
+    o=>{const a=num(o.amt);if(!(a>0))return false;const v={amt:a,cat:o.cat,note:(o.note||'').trim(),date:o.date||today()};
+      if(e)Object.assign(e,v);else S.expenses.push(Object.assign({id:uid()},v));if(v.date.slice(0,7)!==month&&tab==='exp')month=v.date.slice(0,7);commit()},
+    e?()=>{S.expenses=S.expenses.filter(z=>z.id!==e.id);commit();closeSheet()}:null);
+}
+function sheetTask(t){
+  const x=t||{due:today()};
+  openSheet(t?tt('কাজ বদলান'):tt('নতুন কাজ'),fld(tt('কাজের নাম'),'title',x.title,'text','required')+'<div class="two">'+fld(tt('তারিখ'),'due',x.due,'date')+fld(tt('সময়'),'time',x.time,'time')+'</div>',
+    o=>{const ti=(o.title||'').trim();if(!ti)return false;const v={title:ti,due:o.due||'',time:o.time||''};if(t)Object.assign(t,v);else S.tasks.push(Object.assign({id:uid(),done:false},v));commit()},
+    t?()=>{S.tasks=S.tasks.filter(z=>z.id!==t.id);commit();closeSheet()}:null);
+}
+function sheetHabit(x){
+  openSheet(x?tt('অভ্যাস বদলান'):tt('নতুন অভ্যাস'),fld(tt('অভ্যাসের নাম'),'name',x&&x.name,'text','required'),
+    o=>{const n=(o.name||'').trim();if(!n)return false;if(x)x.name=n;else S.habits.push({id:uid(),name:n,days:{}});commit()},
+    x?()=>{S.habits=S.habits.filter(z=>z.id!==x.id);commit();closeSheet()}:null);
+}
+function sheetDebt(x){
+  const v=x||{dir:'get',date:today()};
+  openSheet(x?tt('লেনদেন বদলান'):tt('নতুন লেনদেন'),fld(tt('কার সাথে'),'who',v.who,'text','required')+sel(tt('ধরন'),'dir',[['get',tt('আমি পাব')],['give',tt('আমি দেব')]],v.dir)+money(tt('টাকা'),'amt',v.amt)+fld(tt('নোট (ঐচ্ছিক)'),'note',v.note)+fld(tt('তারিখ'),'date',v.date,'date'),
+    o=>{const a=num(o.amt),w=(o.who||'').trim();if(!(a>0)||!w)return false;const n={who:w,dir:o.dir,amt:a,note:(o.note||'').trim(),date:o.date||today()};if(x)Object.assign(x,n);else S.debts.push(Object.assign({id:uid(),done:false},n));commit()},
+    x?()=>{S.debts=S.debts.filter(z=>z.id!==x.id);commit();closeSheet()}:null);
+}
+function sheetNote(n){
+  openSheet(n?tt('নোট'):tt('নতুন নোট'),fld(tt('শিরোনাম'),'title',n&&n.title)+area(tt('বিস্তারিত'),'body',n&&n.body,9),
+    o=>{const t=(o.title||'').trim(),b=(o.body||'').trim();if(!t&&!b)return false;if(n){n.title=t;n.body=b}else S.notes.push({id:uid(),title:t,body:b,date:today()});commit()},
+    n?()=>{S.notes=S.notes.filter(z=>z.id!==n.id);commit();closeSheet()}:null);
+}
+const DOCP=[tt('ইকামা'),tt('পাসপোর্ট'),tt('ড্রাইভিং লাইসেন্স'),tt('স্বাস্থ্য বিমা'),tt('গাড়ির ইস্তিমারা'),tt('গাড়ির বিমা'),tt('ভিসা')];
+function sheetDoc(x){
+  openSheet(x?tt('ডকুমেন্ট বদলান'):tt('নতুন ডকুমেন্ট'),(x?'':'<div class="chips">'+DOCP.map(p=>'<button type="button" class="chip acc" data-act="doc-pick" data-n="'+esc(p)+'" style="border:0;font-size:.85rem;padding:6px 12px">'+p+'</button>').join('')+'</div>')+fld(tt('নাম'),'name',x&&x.name,'text','required id="docName"')+fld(tt('মেয়াদ শেষের তারিখ'),'expiry',x&&x.expiry,'date','required')+fld(tt('নোট (ঐচ্ছিক)'),'note',x&&x.note),
+    o=>{const n=(o.name||'').trim();if(!n||!o.expiry)return false;const v={name:n,expiry:o.expiry,note:(o.note||'').trim()};if(x)Object.assign(x,v);else S.docs.push(Object.assign({id:uid()},v));commit()},
+    x?()=>{S.docs=S.docs.filter(z=>z.id!==x.id);commit();closeSheet()}:null);
+}
+function sheetVaultEntry(x){
+  openSheet(x?tt('এন্ট্রি বদলান'):tt('নতুন এন্ট্রি'),fld(tt('সাইট বা অ্যাপ'),'site',x&&x.site,'text','required')+fld(tt('ইউজারনেম বা ইমেইল'),'user',x&&x.user)+fld(tt('পাসওয়ার্ড'),'pass',x&&x.pass,'text','autocapitalize="off" spellcheck="false"'),
+    o=>{const s=(o.site||'').trim();if(!s)return false;const v={site:s,user:(o.user||'').trim(),pass:o.pass||''};if(x)Object.assign(x,v);else V.list.push(Object.assign({id:uid()},v));return vaultSave().then(()=>{render()})},
+    x?()=>{V.list=V.list.filter(z=>z.id!==x.id);vaultSave().then(()=>{render();closeSheet()})}:null);
+}
+
+/* ---------- actions ---------- */
+const find=(arr,id)=>arr.find(z=>z.id===id);
+const ACT={
+  lang(){try{localStorage.setItem('dinlipi_lang',LANG==='en'?'bn':'en')}catch(e){}location.reload()},
+  tab(el){tab=el.dataset.tab;sub=null;render();window.scrollTo(0,0)},
+  sub(el){sub=el.dataset.sub;render();window.scrollTo(0,0)},
+  back(){sub=null;render();window.scrollTo(0,0)},
+  fab(el){const f=el.dataset.fab;if(f==='quick')return quickAdd();ACT[f]&&ACT[f]()},
+  'sheet-close'(){closeSheet()},
+  'sheet-del'(el){if(!sheetCfg)return;if(!sheetCfg.armed){sheetCfg.armed=true;el.textContent=tt('নিশ্চিত? আবার চাপুন');return}sheetCfg.onDelete()},
+  pray(el){const d=el.dataset.d,k=el.dataset.k;S.prayers[d]=S.prayers[d]||{};S.prayers[d][k]=S.prayers[d][k]?0:1;commit()},
+  water(el){const t=today(),n=Math.max(0,water()+Number(el.dataset.n));S.health.water[t]=n;commit()},
+  month(el){const p=month.split('-').map(Number),d=new Date(p[0],p[1]-1+Number(el.dataset.n),1);month=d.getFullYear()+'-'+pad(d.getMonth()+1);render()},
+  'exp-add'(){sheetExp()},'exp-edit'(el){sheetExp(find(S.expenses,el.dataset.id))},
+  'task-add'(){sheetTask()},'task-edit'(el){sheetTask(find(S.tasks,el.dataset.id))},
+  'task-done'(el){const t=find(S.tasks,el.dataset.id);if(t){t.done=!t.done;commit()}},
+  'task-clear'(){S.tasks=S.tasks.filter(x=>!x.done);commit()},
+  'toggle-done'(){showDone=!showDone;render()},
+  'habit-add'(){sheetHabit()},'habit-edit'(el){sheetHabit(find(S.habits,el.dataset.id))},
+  'habit-tick'(el){const h=find(S.habits,el.dataset.id),d=el.dataset.d;if(h){if(h.days[d])delete h.days[d];else h.days[d]=1;commit()}},
+  'debt-add'(){sheetDebt()},'debt-edit'(el){sheetDebt(find(S.debts,el.dataset.id))},
+  'debt-done'(el){const x=find(S.debts,el.dataset.id);if(x){x.done=!x.done;commit()}},
+  'toggle-settled'(){showSettled=!showSettled;render()},
+  'note-add'(){sheetNote()},'note-edit'(el){sheetNote(find(S.notes,el.dataset.id))},
+  'doc-add'(){sheetDoc()},'doc-edit'(el){sheetDoc(find(S.docs,el.dataset.id))},
+  'doc-pick'(el){const i=$('#docName');if(i)i.value=el.dataset.n},
+  med(el){const m=find(S.health.meds,el.dataset.id),t=today();if(m){m.taken=m.taken||{};if(m.taken[t])delete m.taken[t];else m.taken[t]=1;commit()}},
+  'med-add'(){openSheet(tt('নতুন ওষুধ'),fld(tt('ওষুধের নাম'),'name','','text','required')+fld(tt('কখন খান (ঐচ্ছিক)'),'time','','text',tt('placeholder="যেমন: রাতে খাবারের পর"')),o=>{const n=(o.name||'').trim();if(!n)return false;S.health.meds.push({id:uid(),name:n,time:(o.time||'').trim(),taken:{}});commit()})},
+  'med-edit'(el){const m=find(S.health.meds,el.dataset.id);openSheet(tt('ওষুধ বদলান'),fld(tt('ওষুধের নাম'),'name',m.name,'text','required')+fld(tt('কখন খান'),'time',m.time),o=>{const n=(o.name||'').trim();if(!n)return false;m.name=n;m.time=(o.time||'').trim();commit()},()=>{S.health.meds=S.health.meds.filter(z=>z.id!==m.id);commit();closeSheet()})},
+  sleep(){const t=today();openSheet(tt('গত রাতের ঘুম'),money(tt('কত ঘণ্টা'),'h',S.health.sleep[t]),o=>{const h=num(o.h);if(!(h>0&&h<=24))return false;S.health.sleep[t]=h;commit()})},
+  'weight-add'(){const last=S.health.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)).pop();openSheet(tt('ওজন লিখুন'),money(tt('কেজি'),'kg',last&&last.kg)+fld(tt('তারিখ'),'date',today(),'date'),o=>{const k=num(o.kg);if(!(k>0))return false;const d=o.date||today(),w=S.health.weights.find(z=>z.date===d);if(w)w.kg=k;else S.health.weights.push({date:d,kg:k});commit()})},
+  'weight-edit'(el){const w=S.health.weights.find(z=>z.date===el.dataset.d);openSheet(tt('ওজন বদলান'),money(tt('কেজি'),'kg',w.kg),o=>{const k=num(o.kg);if(!(k>0))return false;w.kg=k;commit()},()=>{S.health.weights=S.health.weights.filter(z=>z!==w);commit();closeSheet()})},
+  'shop-done'(el){const x=find(S.shop,el.dataset.id);if(x){x.done=!x.done;commit()}},
+  'shop-del'(el){S.shop=S.shop.filter(z=>z.id!==el.dataset.id);commit()},
+  'shop-clear'(){S.shop=S.shop.filter(z=>!z.done);commit()},
+  'ot-set'(){const o=S.settings.ot;openSheet(tt('হিসাবের নিয়ম'),money(tt('মূল বেতন (মাসে)'),'basic',o.basic)+'<div class="two">'+fld(tt('গুণক (১.৫)'),'mult',o.mult,'number','step="any" inputmode="decimal"')+fld(tt('মাসে কত দিন ধরব'),'div',o.div,'number','inputmode="numeric"')+'</div>'+fld(tt('দিনে কত ঘণ্টা'),'hpd',o.hpd,'number','inputmode="decimal" step="any"'),x=>{S.settings.ot={basic:num(x.basic),mult:num(x.mult)||1.5,div:num(x.div)||30,hpd:num(x.hpd)||8};commit()})},
+  'ot-add'(){sheetOT()},'ot-edit'(el){sheetOT(find(S.otlog,el.dataset.id))},
+  'fx-rate'(){openSheet(tt('আজকের রেট'),money(tt('১ ')+S.settings.cur+tt(' = কত টাকা'),'rate',S.settings.rate||''),o=>{const r=num(o.rate);if(!(r>0))return false;S.settings.rate=r;S.settings.rateDate=today();commit()})},
+  'fx-q'(el){const a=$('#fxA'),b=$('#fxB');if(a&&b){a.value=el.dataset.n;b.value=+(el.dataset.n*S.settings.rate).toFixed(2)}},
+  'set-profile'(){const st=S.settings;openSheet(tt('নাম, মুদ্রা, বাজেট'),fld(tt('আপনার নাম (ঐচ্ছিক)'),'name',st.name)+fld(tt('মুদ্রার নাম'),'cur',st.cur)+money(tt('মাসিক খরচের বাজেট (০ হলে বন্ধ)'),'budget',st.budget||'')+fld(tt('দিনে পানির লক্ষ্য (গ্লাস)'),'wg',st.waterGoal,'number','inputmode="numeric"'),o=>{st.name=(o.name||'').trim();st.cur=(o.cur||'').trim()||'SAR';st.budget=num(o.budget);st.waterGoal=Math.max(1,Math.round(num(o.wg))||8);commit()})},
+  'set-prayer'(){const st=S.settings;
+    openSheet(tt('নামাজের সময়ের হিসাব'),sel(tt('শহর'),'city',CITIES.map(c=>[c[0],c[1]]),st.city)+'<div class="two">'+fld(tt('অক্ষাংশ'),'lat',st.lat,'number','step="any"')+fld(tt('দ্রাঘিমাংশ'),'lng',st.lng,'number','step="any"')+'</div>'+fld(tt('সময় অঞ্চল (UTC থেকে ঘণ্টা)'),'tz',st.tz,'number','step="any"')+sel(tt('পদ্ধতি'),'method',[['umm',tt('উম্মুল কুরা (সৌদি আরব)')],['karachi',tt('করাচি (বাংলাদেশ, পাকিস্তান)')]],st.method)+sel(tt('আসরের হিসাব'),'asr',[['1',tt('সাধারণ (শাফেয়ী, মালিকি, হাম্বলি)')],['2',tt('হানাফি')]],String(st.asr)),
+      o=>{const c=CITIES.find(z=>z[0]===o.city);if(c&&c[0]!=='custom'){st.lat=c[2];st.lng=c[3];st.tz=c[4]}else{st.lat=num(o.lat);st.lng=num(o.lng);st.tz=num(o.tz)}st.city=o.city;st.method=o.method;st.asr=Number(o.asr);commit()});
+    const f=$('#sheetForm');f.elements.city.addEventListener('change',()=>{const c=CITIES.find(z=>z[0]===f.elements.city.value);if(c&&c[0]!=='custom'){f.elements.lat.value=c[2];f.elements.lng.value=c[3];f.elements.tz.value=c[4]}})},
+  backup(){
+    try{const blob=new Blob([JSON.stringify(S)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=u;a.download='dinlipi-backup-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast(tt('ব্যাকআপ ফাইল তৈরি হয়েছে'))}
+    catch(e){toast(tt('ব্যাকআপ নামানো যায়নি'))}
+  },
+  async 'backup-copy'(){try{await navigator.clipboard.writeText(JSON.stringify(S));toast(tt('ব্যাকআপ কপি হয়েছে, কোথাও পেস্ট করে রাখুন'))}catch(e){toast(tt('কপি করা যায়নি'))}},
+  'restore-paste'(){openSheet(tt('লেখা থেকে ফেরান'),area(tt('কপি করা ব্যাকআপ এখানে পেস্ট করুন'),'txt','',8),o=>{try{const j=JSON.parse(o.txt||'');if(!j||!Array.isArray(j.expenses))throw 0;vaultLock();S=merge(j);commit();toast(tt('তথ্য ফেরত এসেছে'))}catch(x){sheetErr(tt('লেখাটি ঠিক নয়'));return false}})},
+  restore(){$('#restoreIn').click()},
+  wipe(){openSheet(tt('সব তথ্য মুছবেন?'),tt('<p class="muted">খরচ, নোট, অভ্যাস, ভল্টসহ সব তথ্য এই অ্যাপ থেকে মুছে যাবে। আগে ব্যাকআপ নিয়ে রাখুন।</p>'),()=>{vaultLock();S=DEF();commit();sub=null;tab='home';render()})},
+  'vault-create'(){openSheet(tt('ভল্টের পিন'),tt('<p class="muted small">অন্তত ৪ অঙ্ক। পিন ভুললে তথ্য ফেরত আসবে না।</p>')+fld(tt('পিন'),'pin','','password','inputmode="numeric" autocomplete="new-password" required')+fld(tt('আবার লিখুন'),'pin2','','password','inputmode="numeric" autocomplete="new-password" required'),o=>{
+      if((o.pin||'').length<4){sheetErr(tt('পিন কমপক্ষে ৪ অঙ্কের হতে হবে'));return false}
+      if(o.pin!==o.pin2){sheetErr(tt('দুইবারের পিন মেলেনি'));return false}
+      return vaultCreate(o.pin).then(()=>{render()}).catch(()=>{sheetErr(tt('ভল্ট তৈরি করা যায়নি'));return false})})},
+  'vault-unlock'(){openSheet(tt('ভল্ট খুলুন'),fld(tt('পিন'),'pin','','password','inputmode="numeric" autocomplete="current-password" required'),o=>vaultUnlock(o.pin||'').then(()=>{render()}).catch(()=>{sheetErr(tt('পিন ভুল'));return false}))},
+  'vault-reset'(){openSheet(tt('ভল্ট মুছবেন?'),tt('<p class="muted">সব পাসওয়ার্ড এন্ট্রি মুছে যাবে এবং নতুন পিন দিয়ে শুরু করতে হবে।</p>'),()=>{vaultLock();S.vault=null;commit()})},
+  'vault-lock'(){vaultLock();render()},
+  'vault-add'(){sheetVaultEntry()},
+  'vault-edit'(el){sheetVaultEntry(find(V.list,el.dataset.id))},
+  'vault-show'(el){const id=el.dataset.id;reveal[id]=!reveal[id];render()},
+  async 'vault-copy'(el){const e=find(V.list,el.dataset.id);if(!e)return;try{await navigator.clipboard.writeText(e.pass);toast(tt('পাসওয়ার্ড কপি হয়েছে'))}catch(x){reveal[e.id]=true;render();toast(tt('কপি হয়নি, দেখে নিন'))}}
+};
+function sheetOT(x){
+  const v=x||{date:today()};
+  openSheet(x?tt('ওভারটাইম বদলান'):tt('ওভারটাইম যোগ'),fld(tt('তারিখ'),'date',v.date,'date','required')+money(tt('কত ঘণ্টা'),'hrs',v.hrs),
+    o=>{const h=num(o.hrs);if(!(h>0))return false;const n={date:o.date||today(),hrs:h};if(x)Object.assign(x,n);else S.otlog.push(Object.assign({id:uid()},n));commit()},
+    x?()=>{S.otlog=S.otlog.filter(z=>z.id!==x.id);commit();closeSheet()}:null);
+}
+function quickAdd(){
+  openSheet(tt('কী যোগ করবেন?'),tt('<div class="stack"><button type="button" class="btn block" data-act="q-exp">খরচ লিখুন</button><button type="button" class="btn block" data-act="q-task">নতুন কাজ</button><button type="button" class="btn block" data-act="q-note">নোট লিখুন</button><button type="button" class="btn block" data-act="q-water">এক গ্লাস পানি</button></div>'),()=>{});
+  const f=$('#sheetForm');$('.row-btns',f).hidden=true;
+}
+ACT['q-exp']=()=>{closeSheet();sheetExp()};
+ACT['q-task']=()=>{closeSheet();sheetTask()};
+ACT['q-note']=()=>{closeSheet();sheetNote()};
+ACT['q-water']=()=>{closeSheet();ACT.water({dataset:{n:1}})};
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');
+  if(!el)return;
+  const f=ACT[el.dataset.act];
+  if(f){if(el.type==='button'||el.tagName==='BUTTON')e.preventDefault();f(el)}
+});
+document.addEventListener('submit',e=>{
+  if(e.target.id==='shopForm'){
+    e.preventDefault();const i=$('#shopIn'),n=i.value.trim();if(!n)return;
+    S.shop.push({id:uid(),name:n,done:false});commit();const j=$('#shopIn');if(j)j.focus();
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='noteSearch'){const q=t.value.trim().toLowerCase();$$('.note-item').forEach(n=>{n.hidden=!!q&&n.dataset.q.indexOf(q)<0})}
+  if(t.id==='fxA'){$('#fxB').value=+(num(t.value)*S.settings.rate).toFixed(2)}
+  if(t.id==='fxB'){$('#fxA').value=+(num(t.value)/S.settings.rate).toFixed(2)}
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='restoreIn'){
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||typeof o!=='object'||!Array.isArray(o.expenses))throw 0;vaultLock();S=merge(o);commit();toast(tt('তথ্য ফেরত এসেছে'))}catch(x){toast(tt('ফাইলটি ঠিক নয়'))}};
+    r.readAsText(f);e.target.value='';
+  }
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&V.open){vaultLock();if(sub==='vault')render()}});
+setInterval(()=>{if(tab==='home'&&$('#sheet').hidden)render()},30000);
+
+render();
+if("serviceWorker" in navigator&&/^https?:/.test(location.protocol)){navigator.serviceWorker.register("sw.js").catch(function(){})}
+})();
+</script>
+</body>
+</html>
